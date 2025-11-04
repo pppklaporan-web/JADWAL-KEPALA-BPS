@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Input Kegiatan Pimpinan</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1>🗓️ Tambah Kegiatan Pimpinan</h1>
+
+<form id="formKegiatan">
+    <label>Tanggal:</label>
+    <input type="date" id="tanggal" required>
+
+    <label>Waktu:</label>
+    <input type="time" id="waktu" required>
+
+    <label>Nama Kegiatan:</label>
+    <input type="text" id="kegiatan" placeholder="Contoh: Rapat Koordinasi" required>
+
+    <label>Lokasi:</label>
+    <input type="text" id="lokasi" placeholder="Contoh: Ruang Rapat Utama" required>
+
+    <label>PIC:</label>
+    <input type="text" id="pic" placeholder="Contoh: Sekretaris" required>
+
+    <button type="submit">Simpan</button>
+    <a href="index.html" class="back-btn">← Kembali ke Dashboard</a>
+</form>
+
+<script src="script.js"></script>
+<script>
+document.getElementById("formKegiatan").addEventListener("submit", simpanKegiatan);
+</script>
+
+</body>
+</html>
