@@ -1,37 +1,57 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Input Jadwal Pimpinan</title>
-  <link rel="icon" type="image/png" href="bps.png">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Jadwal Pimpinan</title>
+  <link rel="icon" type="image/png" href="bps.png" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-
   <header>
-    <img src="bps.png" alt="Logo BPS" class="logo">
+    <img src="bps.png" alt="Logo BPS" class="logo" />
     <h1>ADMIN INPUT JADWAL PIMPINAN</h1>
   </header>
 
-  <main>
+  <!-- 🔐 LOGIN FORM -->
+  <section id="loginSection">
+    <div class="login-card">
+      <h2>Login Admin</h2>
+      <form id="loginForm">
+        <label>Email:</label>
+        <input type="email" id="email" placeholder="Email admin" required />
+
+        <label>Password:</label>
+        <input type="password" id="password" placeholder="Password" required />
+
+        <button type="submit">Login</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- 🧾 ADMIN SECTION -->
+  <main id="adminSection" style="display: none;">
+    <div class="top-bar">
+      <button id="logoutBtn" class="logout">Logout</button>
+    </div>
+
     <section class="form-section">
       <h2>Form Input Jadwal</h2>
       <form id="formKegiatan">
         <label>Hari/Tanggal:</label>
-        <input type="date" id="tanggal" required>
+        <input type="date" id="tanggal" required />
 
         <label>Jam Acara:</label>
-        <input type="time" id="jam" required>
+        <input type="time" id="jam" required />
 
         <label>Nama Kegiatan:</label>
-        <input type="text" id="kegiatan" placeholder="Masukkan nama kegiatan" required>
+        <input type="text" id="kegiatan" required placeholder="Masukkan nama kegiatan" />
 
         <label>Alamat/Tempat:</label>
-        <input type="text" id="tempat" placeholder="Masukkan tempat kegiatan" required>
+        <input type="text" id="tempat" required placeholder="Masukkan tempat kegiatan" />
 
         <label>Tim:</label>
-        <input type="text" id="tim" placeholder="Nama Tim atau Personil" required>
+        <input type="text" id="tim" required placeholder="Nama Tim atau Personil" />
 
         <label>Keterangan:</label>
         <textarea id="keterangan" placeholder="Tambahkan keterangan..."></textarea>
@@ -72,27 +92,63 @@
     <p>© 2025 BPS Provinsi Sumatera Barat</p>
   </footer>
 
-  <!-- Firebase -->
+  <!-- 🔥 FIREBASE SETUP -->
   <script type="module">
-    // --- Firebase Configuration ---
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc } 
-      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+    // 🔧 Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyB0Flu6NacmEFNBr3_8gaqfmmzUi8gJ8Es",
       authDomain: "jadwal-pimpinan-8b0ef.firebaseapp.com",
       projectId: "jadwal-pimpinan-8b0ef",
       storageBucket: "jadwal-pimpinan-8b0ef.firebasestorage.app",
       messagingSenderId: "360212048977",
-      appId: "1:360212048977:web:1ff5749cd1416ad08f5c70"
+      appId: "1:360212048977:web:1ff5749cd1416ad08f5c70",
     };
 
     const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
     const db = getFirestore(app);
     const colRef = collection(db, "jadwal");
 
-    // --- Simpan Jadwal Baru ---
+    const loginSection = document.getElementById("loginSection");
+    const adminSection = document.getElementById("adminSection");
+    const loginForm = document.getElementById("loginForm");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    // 🔐 Login
+    loginForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        alert("✅ Login berhasil!");
+      } catch (error) {
+        alert("❌ Login gagal! Periksa email & password.");
+      }
+    });
+
+    // 🚪 Logout
+    logoutBtn.addEventListener("click", async () => {
+      await signOut(auth);
+    });
+
+    // 👀 Pantau status login
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loginSection.style.display = "none";
+        adminSection.style.display = "block";
+        tampilkanKegiatan();
+      } else {
+        loginSection.style.display = "block";
+        adminSection.style.display = "none";
+      }
+    });
+
+    // 🧾 Simpan Jadwal
     document.getElementById("formKegiatan").addEventListener("submit", async (e) => {
       e.preventDefault();
       const tanggal = document.getElementById("tanggal").value;
@@ -109,7 +165,7 @@
       tampilkanKegiatan();
     });
 
-    // --- Tampilkan Jadwal ---
+    // 📋 Tampilkan Jadwal
     async function tampilkanKegiatan() {
       const daftarKegiatan = document.getElementById("daftarKegiatan");
       daftarKegiatan.innerHTML = "";
@@ -134,7 +190,7 @@
         daftarKegiatan.appendChild(row);
       });
 
-      // Tombol Hapus
+      // Tombol hapus
       document.querySelectorAll(".deleteBtn").forEach((btn) => {
         btn.addEventListener("click", async () => {
           if (confirm("Yakin hapus jadwal ini?")) {
@@ -144,7 +200,7 @@
         });
       });
 
-      // Tombol Edit
+      // Tombol edit
       document.querySelectorAll(".editBtn").forEach((btn) => {
         btn.addEventListener("click", async () => {
           const id = btn.dataset.id;
@@ -156,9 +212,6 @@
         });
       });
     }
-
-    // --- Muat awal ---
-    tampilkanKegiatan();
   </script>
 </body>
 </html>
