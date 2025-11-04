@@ -1,72 +1,164 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agenda Kegiatan Kepala BPS</title>
-<link rel="icon" type="image/png" href="bps.png">
-  <link rel="stylesheet" href="style.css"> <!-- ✅ Tambahkan baris ini -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Input Jadwal Pimpinan</title>
+  <link rel="icon" type="image/png" href="bps.png">
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<section class="section">
-<div class="container">
-  <div class="title-center">
-    <div class="title-main">Agenda Kegiatan Kepala BPS</div>
-    <div class="subtitle-main">Provinsi Sumatera Barat Tahun 2025</div>
-    <div class="subtitle-main" id="bulanDisplay">Bulan: -</div>
-  </div>
 
-  <table class="table is-striped is-hoverable is-fullwidth">
-    <thead>
-      <tr>
-        <th>Hari/Tgl</th>
-        <th>Jam Acara</th>
-        <th>Nama Kegiatan</th>
-        <th>Alamat/Tempat</th>
-        <th>Tim</th>
-        <th>Keterangan</th>
-      </tr>
-    </thead>
-    <tbody id="jadwalTable"></tbody>
-  </table>
-</div>
-</section>
+  <header>
+    <img src="bps.png" alt="Logo BPS" class="logo">
+    <h1>ADMIN INPUT JADWAL PIMPINAN</h1>
+  </header>
 
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyB0Flu6NacmEFNBr3_8gaqfmmzUi8gJ8Es",
-  authDomain: "jadwal-pimpinan-8b0ef.firebaseapp.com",
-  projectId: "jadwal-pimpinan-8b0ef",
-  storageBucket: "jadwal-pimpinan-8b0ef.appspot.com",
-  messagingSenderId: "360212048977",
-  appId: "1:360212048977:web:1ff5749cd1416ad08f5c70"
-};
-firebase.initializeApp(firebaseConfig);
-const db=firebase.firestore();
-const tbody=document.getElementById('jadwalTable');
-const bulanDisplay=document.getElementById('bulanDisplay');
+  <main>
+    <section class="form-section">
+      <h2>Form Input Jadwal</h2>
+      <form id="formKegiatan">
+        <label>Hari/Tanggal:</label>
+        <input type="date" id="tanggal" required>
 
-db.collection('jadwal').orderBy('tanggal').onSnapshot(snapshot=>{
-  tbody.innerHTML='';
-  const bulanSet=new Set();
-  snapshot.forEach(doc=>{
-    const d=doc.data();
-    const row=document.createElement('tr');
-    let bg='';
-    switch(d.warna){case'red':bg='#f87171';break;case'blue':bg='#60a5fa';break;case'yellow':bg='#facc15';break;case'green':bg='#4ade80';break;}
-    row.style.backgroundColor=bg;
-    row.innerHTML=`
-      <td>${d.tanggal}</td><td>${d.jam}</td><td>${d.kegiatan}</td>
-      <td>${d.lokasi||'-'}</td><td>${d.tim||'-'}</td><td>${d.keterangan||'-'}</td>`;
-    tbody.appendChild(row);
-    const bulan=new Date(d.tanggal).toLocaleString('id-ID',{month:'long'});
-    bulanSet.add(bulan);
-  });
-  bulanDisplay.textContent='Bulan: '+Array.from(bulanSet).join(', ');
-});
-</script>
+        <label>Jam Acara:</label>
+        <input type="time" id="jam" required>
+
+        <label>Nama Kegiatan:</label>
+        <input type="text" id="kegiatan" placeholder="Masukkan nama kegiatan" required>
+
+        <label>Alamat/Tempat:</label>
+        <input type="text" id="tempat" placeholder="Masukkan tempat kegiatan" required>
+
+        <label>Tim:</label>
+        <input type="text" id="tim" placeholder="Nama Tim atau Personil" required>
+
+        <label>Keterangan:</label>
+        <textarea id="keterangan" placeholder="Tambahkan keterangan..."></textarea>
+
+        <label>Pilih Warna Penanda:</label>
+        <select id="warna">
+          <option value="biru">Biru</option>
+          <option value="merah">Merah</option>
+          <option value="kuning">Kuning</option>
+          <option value="hijau">Hijau</option>
+        </select>
+
+        <button type="submit">Simpan Jadwal</button>
+      </form>
+    </section>
+
+    <section class="table-section">
+      <h2>Daftar Jadwal yang Sudah Diinput</h2>
+      <table id="tabelKegiatan">
+        <thead>
+          <tr>
+            <th>Hari/Tanggal</th>
+            <th>Jam</th>
+            <th>Kegiatan</th>
+            <th>Tempat</th>
+            <th>Tim</th>
+            <th>Keterangan</th>
+            <th>Warna</th>
+            <th>Aksi</th>
+          </tr>
+        </thead>
+        <tbody id="daftarKegiatan"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 BPS Provinsi Sumatera Barat</p>
+  </footer>
+
+  <!-- Firebase -->
+  <script type="module">
+    // --- Firebase Configuration ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc } 
+      from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0Flu6NacmEFNBr3_8gaqfmmzUi8gJ8Es",
+      authDomain: "jadwal-pimpinan-8b0ef.firebaseapp.com",
+      projectId: "jadwal-pimpinan-8b0ef",
+      storageBucket: "jadwal-pimpinan-8b0ef.firebasestorage.app",
+      messagingSenderId: "360212048977",
+      appId: "1:360212048977:web:1ff5749cd1416ad08f5c70"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const colRef = collection(db, "jadwal");
+
+    // --- Simpan Jadwal Baru ---
+    document.getElementById("formKegiatan").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const tanggal = document.getElementById("tanggal").value;
+      const jam = document.getElementById("jam").value;
+      const kegiatan = document.getElementById("kegiatan").value;
+      const tempat = document.getElementById("tempat").value;
+      const tim = document.getElementById("tim").value;
+      const keterangan = document.getElementById("keterangan").value;
+      const warna = document.getElementById("warna").value;
+
+      await addDoc(colRef, { tanggal, jam, kegiatan, tempat, tim, keterangan, warna });
+      alert("✅ Jadwal berhasil disimpan!");
+      document.getElementById("formKegiatan").reset();
+      tampilkanKegiatan();
+    });
+
+    // --- Tampilkan Jadwal ---
+    async function tampilkanKegiatan() {
+      const daftarKegiatan = document.getElementById("daftarKegiatan");
+      daftarKegiatan.innerHTML = "";
+      const snapshot = await getDocs(colRef);
+
+      snapshot.forEach((docItem) => {
+        const data = docItem.data();
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${data.tanggal}</td>
+          <td>${data.jam}</td>
+          <td>${data.kegiatan}</td>
+          <td>${data.tempat}</td>
+          <td>${data.tim}</td>
+          <td>${data.keterangan}</td>
+          <td><span class="warna-box ${data.warna}">${data.warna}</span></td>
+          <td>
+            <button class="editBtn" data-id="${docItem.id}">Edit</button>
+            <button class="deleteBtn" data-id="${docItem.id}">Hapus</button>
+          </td>
+        `;
+        daftarKegiatan.appendChild(row);
+      });
+
+      // Tombol Hapus
+      document.querySelectorAll(".deleteBtn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          if (confirm("Yakin hapus jadwal ini?")) {
+            await deleteDoc(doc(db, "jadwal", btn.dataset.id));
+            tampilkanKegiatan();
+          }
+        });
+      });
+
+      // Tombol Edit
+      document.querySelectorAll(".editBtn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const newKegiatan = prompt("Edit nama kegiatan:");
+          if (newKegiatan) {
+            await updateDoc(doc(db, "jadwal", id), { kegiatan: newKegiatan });
+            tampilkanKegiatan();
+          }
+        });
+      });
+    }
+
+    // --- Muat awal ---
+    tampilkanKegiatan();
+  </script>
 </body>
 </html>
-
