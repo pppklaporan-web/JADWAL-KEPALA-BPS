@@ -33,7 +33,7 @@
   </div>
 </section>
 
-<!-- Firebase -->
+<!-- Firebase Compat -->
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
@@ -57,6 +57,7 @@ const firebaseConfig = {
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
+
   firebase.initializeApp(firebaseConfig);
   const auth = firebase.auth();
   const db = firebase.firestore();
@@ -67,7 +68,7 @@ const app = initializeApp(firebaseConfig);
   const logoutBtn = document.getElementById('logoutBtn');
   const submitBtn = document.getElementById('submitBtn');
 
-  // 🔹 Login Admin 🔹
+  // Login Admin
   loginBtn.addEventListener('click', () => {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
@@ -79,7 +80,7 @@ const app = initializeApp(firebaseConfig);
       .catch(err => document.getElementById('loginMsg').textContent = err.message);
   });
 
-  // 🔹 Logout 🔹
+  // Logout
   logoutBtn.addEventListener('click', () => {
     auth.signOut().then(() => {
       loginDiv.style.display = 'block';
@@ -88,7 +89,7 @@ const app = initializeApp(firebaseConfig);
     });
   });
 
-  // 🔹 Simpan Jadwal 🔹
+  // Simpan Jadwal
   submitBtn.addEventListener('click', () => {
     const tanggal = document.getElementById('tanggal').value;
     const jam = document.getElementById('jam').value;
@@ -101,19 +102,19 @@ const app = initializeApp(firebaseConfig);
       return;
     }
 
-    const jadwal = { tanggal, jam, kegiatan, lokasi, keterangan, createdAt: new Date() };
-
-    db.collection('jadwal').add(jadwal)
-      .then(() => {
-        document.getElementById('statusMsg').textContent = 'Jadwal berhasil disimpan!';
-        // Clear form
-        document.getElementById('tanggal').value = '';
-        document.getElementById('jam').value = '';
-        document.getElementById('kegiatan').value = '';
-        document.getElementById('lokasi').value = '';
-        document.getElementById('keterangan').value = '';
-      })
-      .catch(err => document.getElementById('statusMsg').textContent = err.message);
+    db.collection('jadwal').add({
+      tanggal, jam, kegiatan, lokasi, keterangan,
+      createdAt: new Date()
+    })
+    .then(() => {
+      document.getElementById('statusMsg').textContent = 'Jadwal berhasil disimpan!';
+      document.getElementById('tanggal').value = '';
+      document.getElementById('jam').value = '';
+      document.getElementById('kegiatan').value = '';
+      document.getElementById('lokasi').value = '';
+      document.getElementById('keterangan').value = '';
+    })
+    .catch(err => document.getElementById('statusMsg').textContent = err.message);
   });
 </script>
 </body>
