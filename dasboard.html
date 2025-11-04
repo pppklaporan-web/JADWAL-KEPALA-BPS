@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agenda Kegiatan Kepala BPS Sumatera Barat</title>
+  <link rel="icon" type="image/png" href="bps.png">
+  <link rel="stylesheet" href="style.css">
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB0Flu6NacmEFNBr3_8gaqfmmzUi8gJ8Es",
+      authDomain: "jadwal-pimpinan-8b0ef.firebaseapp.com",
+      projectId: "jadwal-pimpinan-8b0ef",
+      storageBucket: "jadwal-pimpinan-8b0ef.firebasestorage.app",
+      messagingSenderId: "360212048977",
+      appId: "1:360212048977:web:1ff5749cd1416ad08f5c70"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function tampilkanJadwal() {
+      const tabel = document.getElementById("tabelDashboard");
+      tabel.innerHTML = "";
+      const querySnapshot = await getDocs(collection(db, "jadwalPimpinan"));
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const tr = document.createElement("tr");
+        tr.classList.add(data.warna || "");
+        tr.innerHTML = `
+          <td>${data.hariTanggal}</td>
+          <td>${data.jamAcara}</td>
+          <td>${data.namaKegiatan}</td>
+          <td>${data.tempat}</td>
+          <td>${data.tim}</td>
+          <td>${data.keterangan}</td>
+        `;
+        tabel.appendChild(tr);
+      });
+    }
+
+    window.onload = tampilkanJadwal;
+  </script>
+</head>
+
+<body>
+  <header>
+    <img src="bps.png" alt="Logo BPS">
+    <h1>Agenda Kegiatan Kepala BPS</h1>
+    <h2>Provinsi Sumatera Barat Tahun 2025</h2>
+  </header>
+
+  <div class="dashboard-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Hari / Tanggal</th>
+          <th>Jam Acara</th>
+          <th>Nama Kegiatan</th>
+          <th>Tempat</th>
+          <th>Tim</th>
+          <th>Keterangan</th>
+        </tr>
+      </thead>
+      <tbody id="tabelDashboard"></tbody>
+    </table>
+  </div>
+
+  <footer>© 2025 Badan Pusat Statistik Provinsi Sumatera Barat</footer>
+</body>
+</html>
