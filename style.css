@@ -1,0 +1,174 @@
+/* ================================
+   STYLE UMUM WEBSITE BPS
+   ================================ */
+
+body {
+  font-family: "Segoe UI", Arial, sans-serif;
+  background: #f8fafc;
+  color: #222;
+  margin: 0;
+  padding: 0;
+}
+
+/* Header dan Logo */
+header {
+  background: linear-gradient(135deg, #004d99, #0077cc);
+  color: white;
+  text-align: center;
+  padding: 1.5rem 1rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+header img {
+  width: 70px;
+  background: white;
+  border-radius: 50%;
+  padding: 5px;
+}
+
+header h1 {
+  font-size: 1.8rem;
+  margin-top: 0.5rem;
+  font-weight: 700;
+}
+
+header h2 {
+  font-size: 1.1rem;
+  margin-top: 0.2rem;
+  opacity: 0.9;
+}
+
+/* Form Admin */
+form {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 700px;
+  margin: 1.5rem auto;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+form h3 {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+label {
+  font-weight: 500;
+  display: block;
+  margin-top: 0.8rem;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="time"],
+select,
+textarea {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  margin-top: 4px;
+  font-size: 0.95rem;
+  box-sizing: border-box;
+}
+
+textarea {
+  resize: vertical;
+}
+
+button {
+  margin-top: 1rem;
+  padding: 0.7rem 1.2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+button.simpan {
+  background-color: #0077cc;
+  color: white;
+}
+
+button.edit {
+  background-color: #ffaa00;
+  color: #222;
+}
+
+button.hapus {
+  background-color: #ff4d4d;
+  color: white;
+}
+
+/* Dashboard */
+.dashboard-container {
+  margin: 2rem auto;
+  max-width: 1000px;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.dashboard-container h2 {
+  text-align: center;
+  font-size: 1.6rem;
+  margin-bottom: 1rem;
+  color: #004d99;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+th, td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+th {
+  background: #0077cc;
+  color: white;
+  text-transform: uppercase;
+}
+
+tr:nth-child(even) {
+  background: #f2f8fc;
+}
+
+tr:hover {
+  background: #e6f2ff;
+}
+
+/* Warna penanda jadwal */
+tr.merah {
+  background: #ffe5e5 !important;
+}
+tr.biru {
+  background: #e6f2ff !important;
+}
+tr.kuning {
+  background: #fff9e6 !important;
+}
+tr.hijau {
+  background: #e9fbe6 !important;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  margin: 3rem 0 1rem;
+  color: #666;
+  font-size: 0.9rem;
+}
