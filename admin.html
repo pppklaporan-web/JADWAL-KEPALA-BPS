@@ -3,37 +3,118 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Input Kegiatan Pimpinan</title>
-<link rel="stylesheet" href="style.css">
+<title>Admin Input Jadwal</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css">
 </head>
 <body>
+<section class="section">
+  <div class="container">
+    <h1 class="title has-text-centered">Admin Input Jadwal</h1>
 
-<h1>🗓️ Tambah Kegiatan Pimpinan</h1>
+    <!-- Login Form -->
+    <div id="loginDiv">
+      <input type="email" id="email" placeholder="Email" class="input mb-2">
+      <input type="password" id="password" placeholder="Password" class="input mb-2">
+      <button id="loginBtn" class="button is-primary mb-2">Login</button>
+      <p id="loginMsg" class="has-text-danger"></p>
+    </div>
 
-<form id="formKegiatan">
-    <label>Tanggal:</label>
-    <input type="date" id="tanggal" required>
+    <!-- Form Input Jadwal -->
+    <div id="formDiv" style="display:none;">
+      <input type="date" id="tanggal" class="input mb-2">
+      <input type="time" id="jam" class="input mb-2">
+      <input type="text" id="kegiatan" placeholder="Kegiatan" class="input mb-2">
+      <input type="text" id="lokasi" placeholder="Lokasi" class="input mb-2">
+      <input type="text" id="keterangan" placeholder="Keterangan" class="input mb-2">
+      <button id="submitBtn" class="button is-success">Simpan Jadwal</button>
+      <button id="logoutBtn" class="button is-warning mt-2">Logout</button>
+      <p id="statusMsg"></p>
+    </div>
+  </div>
+</section>
 
-    <label>Waktu:</label>
-    <input type="time" id="waktu" required>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
-    <label>Nama Kegiatan:</label>
-    <input type="text" id="kegiatan" placeholder="Contoh: Rapat Koordinasi" required>
-
-    <label>Lokasi:</label>
-    <input type="text" id="lokasi" placeholder="Contoh: Ruang Rapat Utama" required>
-
-    <label>PIC:</label>
-    <input type="text" id="pic" placeholder="Contoh: Sekretaris" required>
-
-    <button type="submit">Simpan</button>
-    <a href="index.html" class="back-btn">← Kembali ke Dashboard</a>
-</form>
-
-<script src="script.js"></script>
 <script>
-document.getElementById("formKegiatan").addEventListener("submit", simpanKegiatan);
-</script>
+  // 🔹 Ganti dengan Firebase config milikmu 🔹
+  // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
 
+// Your web app's Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyB0Flu6NacmEFNBr3_8gaqfmmzUi8gJ8Es",
+  authDomain: "jadwal-pimpinan-8b0ef.firebaseapp.com",
+  projectId: "jadwal-pimpinan-8b0ef",
+  storageBucket: "jadwal-pimpinan-8b0ef.firebasestorage.app",
+  messagingSenderId: "360212048977",
+  appId: "1:360212048977:web:1ff5749cd1416ad08f5c70"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  const loginDiv = document.getElementById('loginDiv');
+  const formDiv = document.getElementById('formDiv');
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const submitBtn = document.getElementById('submitBtn');
+
+  // 🔹 Login Admin 🔹
+  loginBtn.addEventListener('click', () => {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+    auth.signInWithEmailAndPassword(email, password)
+      .then(() => {
+        loginDiv.style.display = 'none';
+        formDiv.style.display = 'block';
+      })
+      .catch(err => document.getElementById('loginMsg').textContent = err.message);
+  });
+
+  // 🔹 Logout 🔹
+  logoutBtn.addEventListener('click', () => {
+    auth.signOut().then(() => {
+      loginDiv.style.display = 'block';
+      formDiv.style.display = 'none';
+      document.getElementById('statusMsg').textContent = '';
+    });
+  });
+
+  // 🔹 Simpan Jadwal 🔹
+  submitBtn.addEventListener('click', () => {
+    const tanggal = document.getElementById('tanggal').value;
+    const jam = document.getElementById('jam').value;
+    const kegiatan = document.getElementById('kegiatan').value;
+    const lokasi = document.getElementById('lokasi').value;
+    const keterangan = document.getElementById('keterangan').value;
+
+    if (!tanggal || !jam || !kegiatan) {
+      document.getElementById('statusMsg').textContent = 'Tanggal, Jam, dan Kegiatan wajib diisi!';
+      return;
+    }
+
+    const jadwal = { tanggal, jam, kegiatan, lokasi, keterangan, createdAt: new Date() };
+
+    db.collection('jadwal').add(jadwal)
+      .then(() => {
+        document.getElementById('statusMsg').textContent = 'Jadwal berhasil disimpan!';
+        // Clear form
+        document.getElementById('tanggal').value = '';
+        document.getElementById('jam').value = '';
+        document.getElementById('kegiatan').value = '';
+        document.getElementById('lokasi').value = '';
+        document.getElementById('keterangan').value = '';
+      })
+      .catch(err => document.getElementById('statusMsg').textContent = err.message);
+  });
+</script>
 </body>
 </html>
