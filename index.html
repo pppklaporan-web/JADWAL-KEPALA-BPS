@@ -3,26 +3,43 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Jadwal Pimpinan</title>
+<title>Agenda Kegiatan Kepala BPS</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css">
 <style>
   body { background-color: #f5f6fa; }
-  .card { margin-bottom: 1rem; }
-  .today { border-left: 4px solid #00d1b2; }
-  .past { opacity: 0.6; }
+  .title-center { text-align: center; }
+  .title-main { font-size: 2rem; font-weight: bold; margin-bottom: 0.2rem; }
+  .subtitle-main { font-size: 1.5rem; margin-bottom: 0.5rem; }
+  table { font-size: 14px; }
 </style>
 </head>
 <body>
 <section class="section">
-  <div class="container">
-    <h1 class="title has-text-centered">Dashboard Jadwal Pimpinan</h1>
-    <div id="jadwalContainer"></div>
+<div class="container">
+  <div class="title-center">
+    <div class="title-main">Agenda Kegiatan Kepala BPS</div>
+    <div class="subtitle-main">Provinsi Sumatera Barat Tahun 2025</div>
+    <div class="subtitle-main" id="bulanDisplay">Bulan: -</div>
   </div>
+
+  <table class="table is-striped is-hoverable is-fullwidth">
+    <thead>
+      <tr>
+        <th>Hari/Tgl</th>
+        <th>Jam Acara</th>
+        <th>Nama Kegiatan</th>
+        <th>Alamat/Tempat</th>
+        <th>Tim</th>
+        <th>Keterangan</th>
+      </tr>
+    </thead>
+    <tbody id="jadwalTable"></tbody>
+  </table>
+</div>
 </section>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
-
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyB0Flu6NacmEFNBr3_8gaqfmmzUi8gJ8Es",
@@ -32,38 +49,28 @@ const firebaseConfig = {
   messagingSenderId: "360212048977",
   appId: "1:360212048977:web:1ff5749cd1416ad08f5c70"
 };
-
 firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+const db=firebase.firestore();
+const tbody=document.getElementById('jadwalTable');
+const bulanDisplay=document.getElementById('bulanDisplay');
 
-const container = document.getElementById('jadwalContainer');
-function formatDate(dateStr){
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'});
-}
-
-db.collection('jadwal').orderBy('tanggal').onSnapshot(snapshot => {
-  container.innerHTML = '';
-  const todayStr = new Date().toISOString().split('T')[0];
-  snapshot.forEach(doc => {
-    const data = doc.data();
-    const cardClass = data.tanggal === todayStr ? 'card today' : (data.tanggal < todayStr ? 'card past' : 'card');
-    const html = `
-      <div class="${cardClass}">
-        <header class="card-header">
-          <p class="card-header-title">${formatDate(data.tanggal)} - ${data.jam}</p>
-        </header>
-        <div class="card-content">
-          <div class="content">
-            <strong>Kegiatan:</strong> ${data.kegiatan} <br>
-            <strong>Lokasi:</strong> ${data.lokasi || '-'} <br>
-            <strong>Keterangan:</strong> ${data.keterangan || '-'}
-          </div>
-        </div>
-      </div>
-    `;
-    container.innerHTML += html;
+db.collection('jadwal').orderBy('tanggal').onSnapshot(snapshot=>{
+  tbody.innerHTML='';
+  const bulanSet=new Set();
+  snapshot.forEach(doc=>{
+    const d=doc.data();
+    const row=document.createElement('tr');
+    let bg='';
+    switch(d.warna){case'red':bg='#f87171';break;case'blue':bg='#60a5fa';break;case'yellow':bg='#facc15';break;case'green':bg='#4ade80';break;}
+    row.style.backgroundColor=bg;
+    row.innerHTML=`
+      <td>${d.tanggal}</td><td>${d.jam}</td><td>${d.kegiatan}</td>
+      <td>${d.lokasi||'-'}</td><td>${d.tim||'-'}</td><td>${d.keterangan||'-'}</td>`;
+    tbody.appendChild(row);
+    const bulan=new Date(d.tanggal).toLocaleString('id-ID',{month:'long'});
+    bulanSet.add(bulan);
   });
+  bulanDisplay.textContent='Bulan: '+Array.from(bulanSet).join(', ');
 });
 </script>
 </body>
