@@ -3,32 +3,45 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin Input Jadwal</title>
+<title>Admin Jadwal Pimpinan</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.4/css/bulma.min.css">
+<style>
+  body { background-color: #f5f6fa; }
+  .card-header-title { font-weight: bold; }
+  .card-header button { margin-left: auto; }
+</style>
 </head>
 <body>
 <section class="section">
   <div class="container">
     <h1 class="title has-text-centered">Admin Input Jadwal</h1>
 
-    <!-- Login Form -->
-    <div id="loginDiv">
+    <!-- Login -->
+    <div id="loginDiv" class="card p-4" style="max-width: 400px; margin:auto;">
+      <h2 class="title is-4 has-text-centered">Login Admin</h2>
       <input type="email" id="email" placeholder="Email" class="input mb-2">
       <input type="password" id="password" placeholder="Password" class="input mb-2">
-      <button id="loginBtn" class="button is-primary mb-2">Login</button>
+      <button id="loginBtn" class="button is-primary is-fullwidth mb-2">Login</button>
       <p id="loginMsg" class="has-text-danger"></p>
     </div>
 
     <!-- Form Input Jadwal -->
-    <div id="formDiv" style="display:none;">
-      <input type="date" id="tanggal" class="input mb-2">
-      <input type="time" id="jam" class="input mb-2">
-      <input type="text" id="kegiatan" placeholder="Kegiatan" class="input mb-2">
-      <input type="text" id="lokasi" placeholder="Lokasi" class="input mb-2">
-      <input type="text" id="keterangan" placeholder="Keterangan" class="input mb-2">
-      <button id="submitBtn" class="button is-success">Simpan Jadwal</button>
-      <button id="logoutBtn" class="button is-warning mt-2">Logout</button>
-      <p id="statusMsg"></p>
+    <div id="formDiv" class="card p-4" style="display:none;">
+      <h2 class="title is-4">Tambah Jadwal</h2>
+      <div class="columns is-multiline">
+        <div class="column is-half"><input type="date" id="tanggal" class="input mb-2"></div>
+        <div class="column is-half"><input type="time" id="jam" class="input mb-2"></div>
+        <div class="column is-half"><input type="text" id="kegiatan" placeholder="Kegiatan" class="input mb-2"></div>
+        <div class="column is-half"><input type="text" id="lokasi" placeholder="Lokasi" class="input mb-2"></div>
+        <div class="column is-full"><input type="text" id="keterangan" placeholder="Keterangan" class="input mb-2"></div>
+      </div>
+      <button id="submitBtn" class="button is-success is-fullwidth mb-2">Simpan Jadwal</button>
+      <button id="logoutBtn" class="button is-warning is-fullwidth">Logout</button>
+      <p id="statusMsg" class="mt-2"></p>
+
+      <!-- List Jadwal dengan Hapus -->
+      <h2 class="title is-4 mt-5">Daftar Jadwal</h2>
+      <div id="listJadwal"></div>
     </div>
   </div>
 </section>
@@ -39,74 +52,102 @@
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
 
 <script>
-  // Config Firebase kamu
-  const firebaseConfig = {
-    apiKey: "AIzaSyB0Flu6NacmEFNBr3_8gaqfmmzUi8gJ8Es",
-    authDomain: "jadwal-pimpinan-8b0ef.firebaseapp.com",
-    projectId: "jadwal-pimpinan-8b0ef",
-    storageBucket: "jadwal-pimpinan-8b0ef.appspot.com",
-    messagingSenderId: "360212048977",
-    appId: "1:360212048977:web:1ff5749cd1416ad08f5c70"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyB0Flu6NacmEFNBr3_8gaqfmmzUi8gJ8Es",
+  authDomain: "jadwal-pimpinan-8b0ef.firebaseapp.com",
+  projectId: "jadwal-pimpinan-8b0ef",
+  storageBucket: "jadwal-pimpinan-8b0ef.appspot.com",
+  messagingSenderId: "360212048977",
+  appId: "1:360212048977:web:1ff5749cd1416ad08f5c70"
+};
 
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
-  const db = firebase.firestore();
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-  const loginDiv = document.getElementById('loginDiv');
-  const formDiv = document.getElementById('formDiv');
-  const loginBtn = document.getElementById('loginBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
-  const submitBtn = document.getElementById('submitBtn');
+const loginDiv = document.getElementById('loginDiv');
+const formDiv = document.getElementById('formDiv');
+const loginBtn = document.getElementById('loginBtn');
+const logoutBtn = document.getElementById('logoutBtn');
+const submitBtn = document.getElementById('submitBtn');
+const listJadwal = document.getElementById('listJadwal');
 
-  // Login
-  loginBtn.addEventListener('click', () => {
-    const email = document.getElementById('email').value;
-    const password = document.getElementById('password').value;
-    auth.signInWithEmailAndPassword(email, password)
-      .then(() => {
-        loginDiv.style.display = 'none';
-        formDiv.style.display = 'block';
-        document.getElementById('loginMsg').textContent = '';
-      })
-      .catch(err => document.getElementById('loginMsg').textContent = err.message);
+// Login
+loginBtn.addEventListener('click', () => {
+  const email = document.getElementById('email').value;
+  const password = document.getElementById('password').value;
+  auth.signInWithEmailAndPassword(email, password)
+    .then(() => { loginDiv.style.display = 'none'; formDiv.style.display = 'block'; document.getElementById('loginMsg').textContent = ''; loadJadwal(); })
+    .catch(err => document.getElementById('loginMsg').textContent = err.message);
+});
+
+// Logout
+logoutBtn.addEventListener('click', () => {
+  auth.signOut().then(() => {
+    loginDiv.style.display = 'block';
+    formDiv.style.display = 'none';
+    document.getElementById('statusMsg').textContent = '';
   });
+});
 
-  // Logout
-  logoutBtn.addEventListener('click', () => {
-    auth.signOut().then(() => {
-      loginDiv.style.display = 'block';
-      formDiv.style.display = 'none';
-      document.getElementById('statusMsg').textContent = '';
+// Simpan Jadwal
+submitBtn.addEventListener('click', () => {
+  const tanggal = document.getElementById('tanggal').value;
+  const jam = document.getElementById('jam').value;
+  const kegiatan = document.getElementById('kegiatan').value;
+  const lokasi = document.getElementById('lokasi').value;
+  const keterangan = document.getElementById('keterangan').value;
+
+  if(!tanggal || !jam || !kegiatan){
+    document.getElementById('statusMsg').textContent = 'Tanggal, Jam, dan Kegiatan wajib diisi!';
+    return;
+  }
+
+  db.collection('jadwal').add({tanggal, jam, kegiatan, lokasi, keterangan, createdAt: new Date()})
+  .then(()=>{
+    document.getElementById('statusMsg').textContent = 'Jadwal berhasil disimpan!';
+    document.getElementById('tanggal').value = '';
+    document.getElementById('jam').value = '';
+    document.getElementById('kegiatan').value = '';
+    document.getElementById('lokasi').value = '';
+    document.getElementById('keterangan').value = '';
+  })
+  .catch(err => document.getElementById('statusMsg').textContent = err.message);
+});
+
+// Load Jadwal dan Tombol Hapus
+function loadJadwal(){
+  db.collection('jadwal').orderBy('tanggal').onSnapshot(snapshot => {
+    listJadwal.innerHTML = '';
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      const card = document.createElement('div');
+      card.className = 'card mb-2';
+      card.innerHTML = `
+        <header class="card-header">
+          <p class="card-header-title">${data.tanggal} - ${data.jam}</p>
+          <button class="button is-danger is-small" id="hapus-${doc.id}">Hapus</button>
+        </header>
+        <div class="card-content">
+          <div class="content">
+            <strong>Kegiatan:</strong> ${data.kegiatan}<br>
+            <strong>Lokasi:</strong> ${data.lokasi || '-'}<br>
+            <strong>Keterangan:</strong> ${data.keterangan || '-'}
+          </div>
+        </div>
+      `;
+      listJadwal.appendChild(card);
+
+      document.getElementById(`hapus-${doc.id}`).addEventListener('click', ()=>{
+        if(confirm('Yakin ingin menghapus jadwal ini?')){
+          db.collection('jadwal').doc(doc.id).delete()
+            .then(()=> alert('Jadwal berhasil dihapus'))
+            .catch(err => alert(err.message));
+        }
+      });
     });
   });
-
-  // Simpan Jadwal
-  submitBtn.addEventListener('click', () => {
-    const tanggal = document.getElementById('tanggal').value;
-    const jam = document.getElementById('jam').value;
-    const kegiatan = document.getElementById('kegiatan').value;
-    const lokasi = document.getElementById('lokasi').value;
-    const keterangan = document.getElementById('keterangan').value;
-
-    if (!tanggal || !jam || !kegiatan) {
-      document.getElementById('statusMsg').textContent = 'Tanggal, Jam, dan Kegiatan wajib diisi!';
-      return;
-    }
-
-    db.collection('jadwal').add({
-      tanggal, jam, kegiatan, lokasi, keterangan, createdAt: new Date()
-    })
-    .then(() => {
-      document.getElementById('statusMsg').textContent = 'Jadwal berhasil disimpan!';
-      document.getElementById('tanggal').value = '';
-      document.getElementById('jam').value = '';
-      document.getElementById('kegiatan').value = '';
-      document.getElementById('lokasi').value = '';
-      document.getElementById('keterangan').value = '';
-    })
-    .catch(err => document.getElementById('statusMsg').textContent = err.message);
-  });
+}
 </script>
 </body>
 </html>
