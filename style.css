@@ -1,174 +1,202 @@
-/* ================================
-   STYLE UMUM WEBSITE BPS
-   ================================ */
-
+/* ====== STYLE GLOBAL ====== */
 body {
-  font-family: "Segoe UI", Arial, sans-serif;
-  background: #f8fafc;
-  color: #222;
+  font-family: "Segoe UI", sans-serif;
+  background-color: #f8fafc;
   margin: 0;
-  padding: 0;
+  color: #222;
 }
 
-/* Header dan Logo */
 header {
-  background: linear-gradient(135deg, #004d99, #0077cc);
-  color: white;
   text-align: center;
-  padding: 1.5rem 1rem;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-}
-
-header img {
-  width: 70px;
-  background: white;
-  border-radius: 50%;
-  padding: 5px;
+  background: linear-gradient(90deg, #007bff, #004aad);
+  color: white;
+  padding: 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 header h1 {
-  font-size: 1.8rem;
-  margin-top: 0.5rem;
-  font-weight: 700;
+  font-size: 1.6rem;
+  margin: 10px 0;
+  line-height: 1.4;
 }
 
-header h2 {
-  font-size: 1.1rem;
-  margin-top: 0.2rem;
-  opacity: 0.9;
+.logo, .logo-dashboard {
+  width: 60px;
+  height: 60px;
 }
 
-/* Form Admin */
-form {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  max-width: 700px;
-  margin: 1.5rem auto;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-}
-
-form h3 {
+footer {
   text-align: center;
-  margin-bottom: 1rem;
-  font-weight: 600;
+  padding: 15px;
+  background: #004aad;
+  color: white;
+  font-size: 0.9rem;
 }
 
-label {
-  font-weight: 500;
-  display: block;
-  margin-top: 0.8rem;
+/* ====== LOGIN CARD ====== */
+.login-card {
+  width: 90%;
+  max-width: 350px;
+  background: white;
+  margin: 50px auto;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
 }
 
-input[type="text"],
-input[type="date"],
-input[type="time"],
-select,
-textarea {
-  width: 100%;
-  padding: 10px;
-  border-radius: 8px;
+.login-card h2 {
+  text-align: center;
+  color: #004aad;
+}
+
+.login-card form {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-card input {
+  margin-bottom: 12px;
+  padding: 8px;
   border: 1px solid #ccc;
-  margin-top: 4px;
-  font-size: 0.95rem;
-  box-sizing: border-box;
-}
-
-textarea {
-  resize: vertical;
+  border-radius: 6px;
 }
 
 button {
-  margin-top: 1rem;
-  padding: 0.7rem 1.2rem;
+  background: #004aad;
+  color: white;
   border: none;
-  border-radius: 8px;
-  font-size: 1rem;
+  padding: 10px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: 0.2s;
+  font-weight: bold;
 }
 
 button:hover {
-  opacity: 0.9;
+  background: #007bff;
 }
 
-button.simpan {
-  background-color: #0077cc;
-  color: white;
-}
-
-button.edit {
-  background-color: #ffaa00;
-  color: #222;
-}
-
-button.hapus {
-  background-color: #ff4d4d;
-  color: white;
-}
-
-/* Dashboard */
-.dashboard-container {
-  margin: 2rem auto;
-  max-width: 1000px;
+/* ====== FORM ADMIN ====== */
+.form-section {
   background: white;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  margin: 20px auto;
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 700px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
 }
 
-.dashboard-container h2 {
+.form-section h2 {
+  color: #004aad;
+  margin-bottom: 10px;
   text-align: center;
-  font-size: 1.6rem;
-  margin-bottom: 1rem;
-  color: #004d99;
+}
+
+.form-section input, 
+.form-section textarea, 
+.form-section select {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+/* ====== TABLE ADMIN ====== */
+.table-section {
+  width: 95%;
+  margin: 20px auto;
+}
+
+.table-section h2 {
+  text-align: center;
+  color: #004aad;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 1rem;
 }
 
 th, td {
-  border: 1px solid #ddd;
-  padding: 10px;
+  border: 1px solid #ccc;
+  padding: 8px;
   text-align: left;
-  font-size: 0.95rem;
 }
 
 th {
-  background: #0077cc;
+  background: #004aad;
   color: white;
-  text-transform: uppercase;
 }
 
-tr:nth-child(even) {
-  background: #f2f8fc;
+.warna-box {
+  padding: 4px 10px;
+  border-radius: 6px;
+  color: white;
+  font-size: 0.8rem;
+  text-transform: capitalize;
 }
 
-tr:hover {
-  background: #e6f2ff;
+.warna-box.merah { background: #dc3545; }
+.warna-box.biru { background: #007bff; }
+.warna-box.kuning { background: #ffc107; color: #000; }
+.warna-box.hijau { background: #28a745; }
+
+/* ====== DASHBOARD ====== */
+.header-dashboard h1 {
+  font-size: 1.6rem;
+  font-weight: bold;
+  margin-bottom: 8px;
 }
 
-/* Warna penanda jadwal */
-tr.merah {
-  background: #ffe5e5 !important;
-}
-tr.biru {
-  background: #e6f2ff !important;
-}
-tr.kuning {
-  background: #fff9e6 !important;
-}
-tr.hijau {
-  background: #e9fbe6 !important;
+#bulanText {
+  font-size: 1.2rem;
+  font-weight: 500;
+  color: #fff;
 }
 
-/* Footer */
-footer {
+.dashboard {
+  margin: 25px;
+}
+
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.dashboard-table th {
+  background: #004aad;
+  color: white;
   text-align: center;
-  margin: 3rem 0 1rem;
-  color: #666;
-  font-size: 0.9rem;
+  padding: 10px;
+}
+
+.dashboard-table td {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Baris warna */
+.baris-merah td { background-color: #ffe6e6; }
+.baris-biru td { background-color: #e6f0ff; }
+.baris-kuning td { background-color: #fff9e6; }
+.baris-hijau td { background-color: #e6ffee; }
+
+/* ====== LOGOUT BUTTON ====== */
+.top-bar {
+  text-align: right;
+  padding: 10px 20px;
+}
+
+.logout {
+  background: #dc3545;
+  color: white;
+}
+
+.logout:hover {
+  background: #c82333;
 }
