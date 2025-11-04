@@ -200,3 +200,17 @@ th {
 .logout:hover {
   background: #c82333;
 }
+/* Warna baris jadwal berdasarkan pilihan admin */
+tr.baris-warna.merah {
+  background-color: #ffcccc !important;
+}
+tr.baris-warna.biru {
+  background-color: #cce5ff !important;
+}
+tr.baris-warna.kuning {
+  background-color: #fff3cd !important;
+}
+tr.baris-warna.hijau {
+  background-color: #d4edda !important;
+}
+
