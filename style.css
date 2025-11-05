@@ -1,195 +1,165 @@
-* {
+/* === FONT & WARNA DASAR === */
+body {
+  font-family: "Poppins", Arial, sans-serif;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
-  font-family: "Poppins", sans-serif;
-}
-
-body {
-  background: #f4f6f9;
-  color: #333;
+  background: linear-gradient(135deg, #e8f0f9, #fff);
+  color: #222;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
 }
 
-/* === Header Baru === */
+/* === HEADER === */
 header {
-  background: linear-gradient(90deg, #0077b6, #00a86b, #ff8c00);
+  background: linear-gradient(90deg, #007bff, #ff7b00, #009e60);
   color: white;
-  padding: 15px 10px 25px;
+  padding: 20px 10px;
   text-align: center;
   position: relative;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
-/* Logo kiri dan kanan sejajar di atas */
 .header-logos {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 95%;
-  max-width: 1200px;
-  margin: 0 auto;
+  padding: 0 15px;
 }
 
-.header-logos img {
-  height: 60px;
+.logo-left, .logo-right {
+  height: 70px;
+  width: auto;
 }
 
-.logo-left {
-  justify-self: flex-start;
-}
-
-.logo-right {
-  justify-self: flex-end;
-}
-
-/* Teks judul di bawah logo */
 .header-title {
-  margin-top: 10px;
   text-align: center;
+  margin-top: 5px;
 }
 
 .header-title h1 {
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   font-weight: 700;
+  margin: 5px 0;
 }
 
 .header-title h2 {
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: 500;
+  margin: 0;
+  opacity: 0.9;
 }
 
-/* Responsif */
-@media (max-width: 768px) {
-  .header-logos {
-    flex-direction: row;
-  }
-
-  .header-logos img {
-    height: 45px;
-  }
-
-  .header-title h1 {
-    font-size: 1.2rem;
-  }
-
-  .header-title h2 {
-    font-size: 0.9rem;
-  }
+/* === JUDUL BULAN === */
+.judul-bulan {
+  text-align: center;
+  margin: 20px 0 10px;
 }
 
+.judul-bulan h3 {
+  font-size: 1.3rem;
+  color: #333;
+}
 
-/* === Filter Section === */
+/* === FILTER & SEARCH === */
 .filter-container {
   display: flex;
-  flex-wrap: wrap;
   justify-content: center;
-  gap: 15px;
-  background: white;
-  padding: 15px 10px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  margin: 20px auto;
-  width: 90%;
-  max-width: 1000px;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 15px;
 }
 
-.filter-container label {
-  font-weight: 600;
-  color: #0077b6;
-}
-
-.filter-container select,
-.filter-container input {
-  padding: 8px 12px;
+#cariKegiatan, #filterBulan {
+  padding: 10px;
+  font-size: 1rem;
   border: 1px solid #ccc;
-  border-radius: 6px;
+  border-radius: 8px;
+  min-width: 220px;
   outline: none;
-  font-size: 0.95rem;
-  transition: 0.2s;
 }
 
-.filter-container input:focus,
-.filter-container select:focus {
-  border-color: #00a86b;
-  box-shadow: 0 0 5px rgba(0,168,107,0.3);
+#cariKegiatan:focus, #filterBulan:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0,123,255,0.3);
 }
 
-/* === Table === */
+/* === TABEL === */
+.table-container {
+  overflow-x: auto;
+  padding: 10px;
+}
+
 table {
-  width: 90%;
-  margin: 0 auto 40px;
+  width: 100%;
   border-collapse: collapse;
   background: white;
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 thead {
-  background: #0077b6;
+  background: linear-gradient(90deg, #007bff, #009e60);
   color: white;
 }
 
-thead th {
+th, td {
+  text-align: left;
   padding: 12px;
-  text-align: center;
-  font-size: 0.95rem;
-  letter-spacing: 0.3px;
+  border-bottom: 1px solid #ddd;
 }
 
-tbody tr:nth-child(even) {
-  background: #f8fafc;
+tr:hover {
+  background-color: #f6f9ff;
 }
 
-tbody td {
-  padding: 10px;
-  text-align: center;
-  font-size: 0.95rem;
-  border-bottom: 1px solid #eee;
+/* === WARNA KHUSUS JADWAL === */
+.color-merah {
+  background-color: #ffcccc !important;
+}
+.color-biru {
+  background-color: #cce5ff !important;
+}
+.color-kuning {
+  background-color: #fff8cc !important;
+}
+.color-hijau {
+  background-color: #d2f8d2 !important;
 }
 
-/* === Color Tags === */
-.color-red {
-  background-color: #ff4d4f !important;
-  color: white !important;
-}
-
-.color-blue {
-  background-color: #3a86ff !important;
-  color: white !important;
-}
-
-.color-yellow {
-  background-color: #ffd60a !important;
-  color: #333 !important;
-}
-
-.color-green {
-  background-color: #00a86b !important;
-  color: white !important;
-}
-
-/* === Responsive === */
+/* === RESPONSIVE === */
 @media (max-width: 768px) {
-  header {
-    flex-direction: column;
-    text-align: center;
+  .header-logos {
+    flex-direction: row;
+    justify-content: space-between;
   }
 
-  table {
-    font-size: 0.85rem;
+  .logo-left, .logo-right {
+    height: 50px;
   }
 
-  thead th, tbody td {
+  .header-title h1 {
+    font-size: 1.4rem;
+  }
+
+  .header-title h2 {
+    font-size: 1rem;
+  }
+
+  th, td {
+    font-size: 0.9rem;
     padding: 8px;
   }
 
-  .filter-container {
-    flex-direction: column;
-    align-items: center;
+  #cariKegiatan, #filterBulan {
+    width: 100%;
+    max-width: 400px;
   }
 }
 
+/* === FOOTER OPSIONAL === */
+footer {
+  text-align: center;
+  padding: 10px;
+  color: #666;
+  font-size: 0.9rem;
+}
