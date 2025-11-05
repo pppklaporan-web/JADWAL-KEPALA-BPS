@@ -56,6 +56,13 @@
         <label>Keterangan:</label>
         <textarea id="keterangan" placeholder="Tambahkan keterangan..."></textarea>
 
+        <label>Konfirmasi Kehadiran:</label>
+        <select id="kehadiran" required>
+          <option value="">-- Pilih Konfirmasi --</option>
+          <option value="Dihadiri Kepala">Dihadiri Kepala</option>
+          <option value="Diwakilkan">Diwakilkan</option>
+        </select>
+
         <label>Pilih Warna Penanda:</label>
         <select id="warna">
           <option value="biru">Biru</option>
@@ -79,6 +86,7 @@
             <th>Tempat</th>
             <th>Tim</th>
             <th>Keterangan</th>
+            <th>Kehadiran</th>
             <th>Warna</th>
             <th>Aksi</th>
           </tr>
@@ -157,6 +165,7 @@
       const tempat = document.getElementById("tempat").value;
       const tim = document.getElementById("tim").value;
       const keterangan = document.getElementById("keterangan").value;
+      const kehadiran = document.getElementById("kehadiran").value;
       const warna = document.getElementById("warna").value;
 
       await addDoc(colRef, { tanggal, jam, kegiatan, tempat, tim, keterangan, warna });
@@ -181,6 +190,7 @@
           <td>${data.tempat}</td>
           <td>${data.tim}</td>
           <td>${data.keterangan}</td>
+          <td>${data.kehadiran || "-"}</td>
           <td><span class="warna-box ${data.warna}">${data.warna}</span></td>
           <td>
             <button class="editBtn" data-id="${docItem.id}">Edit</button>
@@ -215,5 +225,6 @@
   </script>
 </body>
 </html>
+
 
 
