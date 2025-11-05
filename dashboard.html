@@ -3,60 +3,61 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agenda Kegiatan Kepala BPS</title>
-  <link rel="icon" type="image/png" href="bps.png" />
+  <title>Agenda Kegiatan Kepala BPS Provinsi Sumatera Barat Tahun 2025</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header class="header-dashboard">
-    <img src="bps.png" alt="Logo BPS" class="logo-dashboard" />
-    <h1>AGENDA KEGIATAN KEPALA BPS<br>PROVINSI SUMATERA BARAT TAHUN 2025</h1>
-    <h3 id="bulanText"></h3>
+  <header class="header">
+    <div class="header-content">
+      <img src="logo-bps.png" alt="Logo BPS" class="logo">
+      <div class="judul">
+        <h1>Agenda Kegiatan Kepala BPS</h1>
+        <h2>Provinsi Sumatera Barat Tahun 2025</h2>
+        <h3 id="bulanDisplay">Bulan: -</h3>
+      </div>
+    </div>
   </header>
 
-  <section class="filter-section">
-    <div class="filter-container">
+  <main>
+    <section class="filter-container">
+      <label for="filterBulan">Filter Bulan:</label>
       <select id="filterBulan">
         <option value="">Semua Bulan</option>
-        <option value="0">Januari</option>
-        <option value="1">Februari</option>
-        <option value="2">Maret</option>
-        <option value="3">April</option>
-        <option value="4">Mei</option>
-        <option value="5">Juni</option>
-        <option value="6">Juli</option>
-        <option value="7">Agustus</option>
-        <option value="8">September</option>
-        <option value="9">Oktober</option>
-        <option value="10">November</option>
-        <option value="11">Desember</option>
+        <option value="01">Januari</option>
+        <option value="02">Februari</option>
+        <option value="03">Maret</option>
+        <option value="04">April</option>
+        <option value="05">Mei</option>
+        <option value="06">Juni</option>
+        <option value="07">Juli</option>
+        <option value="08">Agustus</option>
+        <option value="09">September</option>
+        <option value="10">Oktober</option>
+        <option value="11">November</option>
+        <option value="12">Desember</option>
       </select>
 
-      <input type="text" id="searchInput" placeholder="Cari nama kegiatan..." />
-    </div>
-  </section>
+      <input type="text" id="searchInput" placeholder="Cari kegiatan..." />
+    </section>
 
-  <main class="dashboard">
-    <table class="dashboard-table">
-      <thead>
-        <tr>
-          <th>Hari/Tanggal</th>
-          <th>Jam Acara</th>
-          <th>Nama Kegiatan</th>
-          <th>Alamat/Tempat</th>
-          <th>Tim</th>
-          <th>Keterangan</th>
-        </tr>
-      </thead>
-      <tbody id="jadwalTabel"></tbody>
-    </table>
+    <div class="table-container">
+      <table id="jadwalTable">
+        <thead>
+          <tr>
+            <th>Hari/Tanggal</th>
+            <th>Jam Acara</th>
+            <th>Nama Kegiatan</th>
+            <th>Alamat/Tempat</th>
+            <th>Tim</th>
+            <th>Keterangan</th>
+          </tr>
+        </thead>
+        <tbody id="jadwalBody"></tbody>
+      </table>
+    </div>
   </main>
 
-  <footer>
-    <p>© 2025 BPS Provinsi Sumatera Barat</p>
-  </footer>
-
-  <!-- 🔥 FIREBASE -->
+  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -67,75 +68,63 @@
       projectId: "jadwal-pimpinan-8b0ef",
       storageBucket: "jadwal-pimpinan-8b0ef.firebasestorage.app",
       messagingSenderId: "360212048977",
-      appId: "1:360212048977:web:1ff5749cd1416ad08f5c70",
+      appId: "1:360212048977:web:1ff5749cd1416ad08f5c70"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    const bulanText = document.getElementById("bulanText");
-    const jadwalTabel = document.getElementById("jadwalTabel");
+    const tbody = document.getElementById("jadwalBody");
     const filterBulan = document.getElementById("filterBulan");
     const searchInput = document.getElementById("searchInput");
-
+    const bulanDisplay = document.getElementById("bulanDisplay");
     let semuaData = [];
 
-    const namaBulan = [
-      "Januari","Februari","Maret","April","Mei","Juni",
-      "Juli","Agustus","September","Oktober","November","Desember"
-    ];
-
-    function formatBulan(tanggal) {
-      const d = new Date(tanggal);
-      return namaBulan[d.getMonth()] + " " + d.getFullYear();
-    }
-
     async function ambilData() {
-      const colRef = collection(db, "jadwal");
-      const snapshot = await getDocs(colRef);
-      semuaData = snapshot.docs.map(doc => doc.data());
-      tampilkanJadwal(semuaData);
-    }
-
-    function tampilkanJadwal(dataArray) {
-      jadwalTabel.innerHTML = "";
-      let bulanTerakhir = "";
-
-      dataArray.forEach(data => {
-        const warnaKelas = data.warna || "biru";
-        const row = document.createElement("tr");
-        row.classList.add("baris-warna", warnaKelas);
-        row.innerHTML = `
-          <td>${data.tanggal}</td>
-          <td>${data.jam}</td>
-          <td>${data.kegiatan}</td>
-          <td>${data.tempat}</td>
-          <td>${data.tim}</td>
-          <td>${data.keterangan}</td>
-        `;
-        jadwalTabel.appendChild(row);
-        bulanTerakhir = formatBulan(data.tanggal);
+      const querySnapshot = await getDocs(collection(db, "jadwal"));
+      semuaData = [];
+      querySnapshot.forEach((doc) => {
+        semuaData.push(doc.data());
       });
-
-      bulanText.textContent = dataArray.length ? "Bulan: " + bulanTerakhir : "Tidak ada data untuk filter ini";
+      tampilkanData(semuaData);
     }
 
-    function filterData() {
-      const bulanVal = filterBulan.value;
-      const keyword = searchInput.value.toLowerCase();
+    function tampilkanData(data) {
+      tbody.innerHTML = "";
+      data.forEach((d) => {
+        const tr = document.createElement("tr");
+        tr.classList.add("baris-jadwal");
+        if (d.warna) tr.style.backgroundColor = d.warna;
 
-      const hasil = semuaData.filter(item => {
-        const tanggal = new Date(item.tanggal);
-        const cocokBulan = bulanVal === "" || tanggal.getMonth().toString() === bulanVal;
-        const cocokCari = item.kegiatan.toLowerCase().includes(keyword);
+        tr.innerHTML = `
+          <td>${d.hari || ""}</td>
+          <td>${d.jam || ""}</td>
+          <td>${d.kegiatan || ""}</td>
+          <td>${d.tempat || ""}</td>
+          <td>${d.tim || ""}</td>
+          <td>${d.keterangan || ""}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterDanCari() {
+      let bulan = filterBulan.value;
+      let cari = searchInput.value.toLowerCase();
+      let hasil = semuaData.filter((d) => {
+        let cocokBulan = !bulan || (d.tanggal && d.tanggal.includes(`-${bulan}-`));
+        let cocokCari =
+          d.kegiatan?.toLowerCase().includes(cari) ||
+          d.tempat?.toLowerCase().includes(cari) ||
+          d.tim?.toLowerCase().includes(cari);
         return cocokBulan && cocokCari;
       });
-
-      tampilkanJadwal(hasil);
+      tampilkanData(hasil);
+      bulanDisplay.textContent = bulan ? `Bulan: ${bulan}` : "Bulan: Semua";
     }
 
-    filterBulan.addEventListener("change", filterData);
-    searchInput.addEventListener("input", filterData);
+    filterBulan.addEventListener("change", filterDanCari);
+    searchInput.addEventListener("input", filterDanCari);
 
     ambilData();
   </script>
