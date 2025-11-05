@@ -102,129 +102,162 @@
 
   <!-- 🔥 FIREBASE SETUP -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // 🔧 Firebase Config
-    const firebaseConfig = {
-      apiKey: "AIzaSyB0Flu6NacmEFNBr3_8gaqfmmzUi8gJ8Es",
-      authDomain: "jadwal-pimpinan-8b0ef.firebaseapp.com",
-      projectId: "jadwal-pimpinan-8b0ef",
-      storageBucket: "jadwal-pimpinan-8b0ef.firebasestorage.app",
-      messagingSenderId: "360212048977",
-      appId: "1:360212048977:web:1ff5749cd1416ad08f5c70",
-    };
+  // 🔧 Firebase Config
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Flu6NacmEFNBr3_8gaqfmmzUi8gJ8Es",
+    authDomain: "jadwal-pimpinan-8b0ef.firebaseapp.com",
+    projectId: "jadwal-pimpinan-8b0ef",
+    storageBucket: "jadwal-pimpinan-8b0ef.appspot.com",
+    messagingSenderId: "360212048977",
+    appId: "1:360212048977:web:1ff5749cd1416ad08f5c70",
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const colRef = collection(db, "jadwal");
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const colRef = collection(db, "jadwal");
 
-    const loginSection = document.getElementById("loginSection");
-    const adminSection = document.getElementById("adminSection");
-    const loginForm = document.getElementById("loginForm");
-    const logoutBtn = document.getElementById("logoutBtn");
+  const loginSection = document.getElementById("loginSection");
+  const adminSection = document.getElementById("adminSection");
+  const loginForm = document.getElementById("loginForm");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const formKegiatan = document.getElementById("formKegiatan");
+  const simpanBtn = formKegiatan.querySelector("button[type='submit']");
 
-    // 🔐 Login
-    loginForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-        alert("✅ Login berhasil!");
-      } catch (error) {
-        alert("❌ Login gagal! Periksa email & password.");
-      }
-    });
+  let editId = null; // 🆔 Menyimpan ID data yang sedang diedit
 
-    // 🚪 Logout
-    logoutBtn.addEventListener("click", async () => {
-      await signOut(auth);
-    });
-
-    // 👀 Pantau status login
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        loginSection.style.display = "none";
-        adminSection.style.display = "block";
-        tampilkanKegiatan();
-      } else {
-        loginSection.style.display = "block";
-        adminSection.style.display = "none";
-      }
-    });
-
-    // 🧾 Simpan Jadwal
-    document.getElementById("formKegiatan").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const tanggal = document.getElementById("tanggal").value;
-      const jam = document.getElementById("jam").value;
-      const kegiatan = document.getElementById("kegiatan").value;
-      const tempat = document.getElementById("tempat").value;
-      const tim = document.getElementById("tim").value;
-      const keterangan = document.getElementById("keterangan").value;
-      const kehadiran = document.getElementById("kehadiran").value;
-      const warna = document.getElementById("warna").value;
-
-      await addDoc(colRef, { tanggal, jam, kegiatan, tempat, tim, keterangan, warna });
-      alert("✅ Jadwal berhasil disimpan!");
-      document.getElementById("formKegiatan").reset();
-      tampilkanKegiatan();
-    });
-
-    // 📋 Tampilkan Jadwal
-    async function tampilkanKegiatan() {
-      const daftarKegiatan = document.getElementById("daftarKegiatan");
-      daftarKegiatan.innerHTML = "";
-      const snapshot = await getDocs(colRef);
-
-      snapshot.forEach((docItem) => {
-        const data = docItem.data();
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${data.tanggal}</td>
-          <td>${data.jam}</td>
-          <td>${data.kegiatan}</td>
-          <td>${data.tempat}</td>
-          <td>${data.tim}</td>
-          <td>${data.keterangan}</td>
-          <td>${data.kehadiran || "-"}</td>
-          <td><span class="warna-box ${data.warna}">${data.warna}</span></td>
-          <td>
-            <button class="editBtn" data-id="${docItem.id}">Edit</button>
-            <button class="deleteBtn" data-id="${docItem.id}">Hapus</button>
-          </td>
-        `;
-        daftarKegiatan.appendChild(row);
-      });
-
-      // Tombol hapus
-      document.querySelectorAll(".deleteBtn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          if (confirm("Yakin hapus jadwal ini?")) {
-            await deleteDoc(doc(db, "jadwal", btn.dataset.id));
-            tampilkanKegiatan();
-          }
-        });
-      });
-
-      // Tombol edit
-      document.querySelectorAll(".editBtn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-          const id = btn.dataset.id;
-          const newKegiatan = prompt("Edit nama kegiatan:");
-          if (newKegiatan) {
-            await updateDoc(doc(db, "jadwal", id), { kegiatan: newKegiatan });
-            tampilkanKegiatan();
-          }
-        });
-      });
+  // 🔐 Login
+  loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      alert("✅ Login berhasil!");
+    } catch (error) {
+      alert("❌ Login gagal! Periksa email & password.");
     }
-  </script>
+  });
+
+  // 🚪 Logout
+  logoutBtn.addEventListener("click", async () => {
+    await signOut(auth);
+    formKegiatan.reset();
+    simpanBtn.textContent = "Simpan Jadwal";
+    editId = null;
+  });
+
+  // 👀 Pantau status login
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      loginSection.style.display = "none";
+      adminSection.style.display = "block";
+      tampilkanKegiatan();
+    } else {
+      loginSection.style.display = "block";
+      adminSection.style.display = "none";
+    }
+  });
+
+  // 🧾 Simpan / Update Jadwal
+  formKegiatan.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const tanggal = document.getElementById("tanggal").value;
+    const jam = document.getElementById("jam").value;
+    const kegiatan = document.getElementById("kegiatan").value;
+    const tempat = document.getElementById("tempat").value;
+    const tim = document.getElementById("tim").value;
+    const keterangan = document.getElementById("keterangan").value;
+    const kehadiran = document.getElementById("kehadiran").value;
+    const warna = document.getElementById("warna").value;
+
+    if (editId) {
+      // ✏️ Update data yang sudah ada
+      await updateDoc(doc(db, "jadwal", editId), {
+        tanggal, jam, kegiatan, tempat, tim, keterangan, kehadiran, warna
+      });
+      alert("✅ Jadwal berhasil diperbarui!");
+      editId = null;
+      simpanBtn.textContent = "Simpan Jadwal";
+    } else {
+      // ➕ Tambah data baru
+      await addDoc(colRef, { tanggal, jam, kegiatan, tempat, tim, keterangan, kehadiran, warna });
+      alert("✅ Jadwal berhasil disimpan!");
+    }
+
+    formKegiatan.reset();
+    tampilkanKegiatan();
+  });
+
+  // 📋 Tampilkan Jadwal
+  async function tampilkanKegiatan() {
+    const daftarKegiatan = document.getElementById("daftarKegiatan");
+    daftarKegiatan.innerHTML = "";
+    const snapshot = await getDocs(colRef);
+
+    snapshot.forEach((docItem) => {
+      const data = docItem.data();
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${data.tanggal}</td>
+        <td>${data.jam}</td>
+        <td>${data.kegiatan}</td>
+        <td>${data.tempat}</td>
+        <td>${data.tim}</td>
+        <td>${data.keterangan}</td>
+        <td>${data.kehadiran || "-"}</td>
+        <td><span class="warna-box ${data.warna}">${data.warna}</span></td>
+        <td>
+          <button class="editBtn" data-id="${docItem.id}">Edit</button>
+          <button class="deleteBtn" data-id="${docItem.id}">Hapus</button>
+        </td>
+      `;
+      daftarKegiatan.appendChild(row);
+    });
+
+    // 🗑️ Tombol hapus
+    document.querySelectorAll(".deleteBtn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        if (confirm("Yakin hapus jadwal ini?")) {
+          await deleteDoc(doc(db, "jadwal", btn.dataset.id));
+          tampilkanKegiatan();
+        }
+      });
+    });
+
+    // ✏️ Tombol edit — isi kembali ke form
+    document.querySelectorAll(".editBtn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const id = btn.dataset.id;
+        const docRef = doc(db, "jadwal", id);
+        const allDocs = await getDocs(colRef);
+        allDocs.forEach((item) => {
+          if (item.id === id) {
+            const data = item.data();
+            document.getElementById("tanggal").value = data.tanggal;
+            document.getElementById("jam").value = data.jam;
+            document.getElementById("kegiatan").value = data.kegiatan;
+            document.getElementById("tempat").value = data.tempat;
+            document.getElementById("tim").value = data.tim;
+            document.getElementById("keterangan").value = data.keterangan;
+            document.getElementById("kehadiran").value = data.kehadiran || "";
+            document.getElementById("warna").value = data.warna || "biru";
+          }
+        });
+        editId = id;
+        simpanBtn.textContent = "Update Jadwal";
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+    });
+  }
+</script>
 </body>
 </html>
+
 
 
 
