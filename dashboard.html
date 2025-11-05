@@ -6,16 +6,50 @@
   <title>Dashboard Jadwal Pimpinan</title>
   <link rel="icon" type="image/png" href="bps.png" />
   <link rel="stylesheet" href="style.css" />
+
+  <style>
+    /* ==== STRIP WARNA DI KIRI ==== */
+    tr.color-merah { border-left: 8px solid #ff4d4d; }
+    tr.color-biru { border-left: 8px solid #007bff; }
+    tr.color-kuning { border-left: 8px solid #ffc107; }
+    tr.color-hijau { border-left: 8px solid #28a745; }
+
+    tr td:first-child {
+      font-weight: 600;
+      color: #222;
+    }
+
+    tr td {
+      padding: 10px;
+      vertical-align: middle;
+    }
+
+    thead th {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    /* Responsif */
+    @media (max-width: 768px) {
+      table {
+        font-size: 0.9rem;
+      }
+      tr td {
+        padding: 8px;
+      }
+    }
+  </style>
 </head>
 <body>
   <header>
     <div class="header-logos">
       <img src="bps.png" alt="Logo BPS" class="logo-left" />
       <div class="header-title">
-        <h1>JADWAL KEGIATAN PIMPINAN</h1>
+        <h1>AGENDA KEGIATAN PIMPINAN</h1>
         <h2>BPS Provinsi Sumatera Barat</h2>
       </div>
-      <img src="se.png" alt="Logo Sensus" class="logo-right" />
+      <img src="SEbps.png" alt="Logo Sensus Ekonomi 2026" class="logo-right" />
     </div>
   </header>
 
@@ -24,7 +58,7 @@
   </section>
 
   <div class="filter-container">
-    <input type="text" id="cariKegiatan" placeholder="🔍 Cari kegiatan..." />
+    <input type="text" id="cariKegiatan" placeholder="🔍 Cari kegiatan, tempat, atau tim..." />
     <select id="filterBulan">
       <option value="">Semua Bulan</option>
       <option value="01">Januari</option>
@@ -46,13 +80,12 @@
     <table>
       <thead>
         <tr>
-          <th>Tanggal</th>
+          <th>Hari/Tanggal</th>
           <th>Jam</th>
           <th>Kegiatan</th>
           <th>Tempat</th>
           <th>Tim</th>
           <th>Keterangan</th>
-          
         </tr>
       </thead>
       <tbody id="daftarKegiatan"></tbody>
@@ -68,7 +101,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // ✅ Pastikan config ini sama persis dengan admin.html
+    // ✅ Sesuaikan dengan konfigurasi Firebase kamu
     const firebaseConfig = {
       apiKey: "AIzaSyB0Flu6NacmEFNBr3_8gaqfmmzUi8gJ8Es",
       authDomain: "jadwal-pimpinan-8b0ef.firebaseapp.com",
@@ -83,55 +116,63 @@
     const colRef = collection(db, "jadwal");
 
     const daftarKegiatan = document.getElementById("daftarKegiatan");
-    const judulBulan = document.getElementById("judulBulan");
     const filterBulan = document.getElementById("filterBulan");
     const cariKegiatan = document.getElementById("cariKegiatan");
+    const judulBulan = document.getElementById("judulBulan");
 
-    // 🧭 Fungsi menampilkan data
     async function tampilkanKegiatan() {
+      daftarKegiatan.innerHTML = "<tr><td colspan='6'>Memuat data...</td></tr>";
       const snapshot = await getDocs(colRef);
       daftarKegiatan.innerHTML = "";
 
       const filterValue = filterBulan.value;
       const cariValue = cariKegiatan.value.toLowerCase();
 
-      snapshot.forEach((docItem) => {
-        const data = docItem.data();
+      const semuaData = [];
+      snapshot.forEach(doc => semuaData.push(doc.data()));
+
+      // ✅ Urutkan berdasarkan tanggal (paling awal dulu)
+      semuaData.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
+
+      semuaData.forEach(data => {
         const tanggal = new Date(data.tanggal);
         const bulan = String(tanggal.getMonth() + 1).padStart(2, "0");
 
-        // Filter dan pencarian
-        if ((filterValue === "" || bulan === filterValue) &&
-            (cariValue === "" || data.kegiatan.toLowerCase().includes(cariValue))) {
-
-          const row = document.createElement("tr");
-          row.classList.add(`color-${data.warna || "putih"}`);
-          row.innerHTML = `
-            <td>${data.tanggal}</td>
+        if (
+          (filterValue === "" || bulan === filterValue) &&
+          (cariValue === "" ||
+            data.kegiatan.toLowerCase().includes(cariValue) ||
+            data.tempat.toLowerCase().includes(cariValue) ||
+            data.tim.toLowerCase().includes(cariValue))
+        ) {
+          const tr = document.createElement("tr");
+          tr.classList.add(`color-${data.warna || "putih"}`);
+          tr.innerHTML = `
+            <td>${tanggal.toLocaleDateString("id-ID", {
+              weekday: "long",
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}</td>
             <td>${data.jam}</td>
             <td>${data.kegiatan}</td>
             <td>${data.tempat}</td>
             <td>${data.tim}</td>
             <td>${data.keterangan || "-"}</td>
-            
           `;
-          daftarKegiatan.appendChild(row);
+          daftarKegiatan.appendChild(tr);
         }
       });
 
-      // Ganti judul bulan otomatis
       const bulanText = filterBulan.options[filterBulan.selectedIndex].text;
-      judulBulan.textContent = filterValue ? `Jadwal Bulan ${bulanText}` : "Semua Jadwal Pimpinan";
+      judulBulan.textContent = filterValue
+        ? `Jadwal Bulan ${bulanText}`
+        : "Agenda Kegiatan Pimpinan (Semua Bulan)";
     }
 
-    // ⏱ Jalankan otomatis
     tampilkanKegiatan();
-
-    // 🔁 Event listener filter dan pencarian
     filterBulan.addEventListener("change", tampilkanKegiatan);
-    cariKegiatan.addEventListener("keyup", tampilkanKegiatan);
+    cariKegiatan.addEventListener("input", tampilkanKegiatan);
   </script>
 </body>
 </html>
-
-
