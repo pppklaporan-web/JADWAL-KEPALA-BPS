@@ -163,3 +163,103 @@ footer {
   color: #666;
   font-size: 0.9rem;
 }
+/* === FORM INPUT (ADMIN.JS) === */
+form {
+  background: white;
+  max-width: 650px;
+  margin: 30px auto;
+  padding: 25px 30px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-top: 6px solid #007bff;
+}
+
+form h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #007bff;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin-top: 15px;
+  color: #333;
+}
+
+input[type="text"],
+input[type="date"],
+input[type="time"],
+select,
+textarea {
+  width: 100%;
+  padding: 10px 12px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 6px rgba(0,123,255,0.3);
+  outline: none;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+/* Tombol Simpan / Hapus */
+button {
+  background: linear-gradient(90deg, #007bff, #009e60);
+  color: white;
+  font-weight: 600;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: background 0.3s ease;
+}
+
+button:hover {
+  background: linear-gradient(90deg, #009e60, #ff7b00);
+}
+
+/* Tombol Hapus Spesifik */
+button.hapus {
+  background: #dc3545;
+}
+
+button.hapus:hover {
+  background: #b02a37;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 600px) {
+  form {
+    padding: 20px;
+    margin: 15px;
+  }
+
+  form h2 {
+    font-size: 1.3rem;
+  }
+
+  label {
+    font-size: 0.95rem;
+  }
+
+  input, select, textarea, button {
+    font-size: 0.95rem;
+  }
+}
+
