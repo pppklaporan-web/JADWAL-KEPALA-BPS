@@ -86,6 +86,7 @@
           <th>Tempat</th>
           <th>Tim</th>
           <th>Keterangan</th>
+          <th>Kehadiran</th>
         </tr>
       </thead>
       <tbody id="daftarKegiatan"></tbody>
@@ -159,6 +160,7 @@
             <td>${data.tempat}</td>
             <td>${data.tim}</td>
             <td>${data.keterangan || "-"}</td>
+            <td>${data.kehadiran || "-"}</td>
           `;
           daftarKegiatan.appendChild(tr);
         }
@@ -176,4 +178,5 @@
   </script>
 </body>
 </html>
+
 
