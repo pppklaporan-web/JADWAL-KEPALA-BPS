@@ -1,162 +1,135 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Agenda Kegiatan Kepala BPS Sumatera Barat</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Jadwal Pimpinan</title>
+  <link rel="icon" type="image/png" href="bps.png" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <div class="header-logos">
+      <img src="bps.png" alt="Logo BPS" class="logo-left" />
+      <div class="header-title">
+        <h1>JADWAL KEGIATAN PIMPINAN</h1>
+        <h2>BPS Provinsi Sumatera Barat</h2>
+      </div>
+      <img src="se.png" alt="Logo Sensus" class="logo-right" />
+    </div>
+  </header>
 
+  <section class="judul-bulan">
+    <h3 id="judulBulan"></h3>
+  </section>
+
+  <div class="filter-container">
+    <input type="text" id="cariKegiatan" placeholder="🔍 Cari kegiatan..." />
+    <select id="filterBulan">
+      <option value="">Semua Bulan</option>
+      <option value="01">Januari</option>
+      <option value="02">Februari</option>
+      <option value="03">Maret</option>
+      <option value="04">April</option>
+      <option value="05">Mei</option>
+      <option value="06">Juni</option>
+      <option value="07">Juli</option>
+      <option value="08">Agustus</option>
+      <option value="09">September</option>
+      <option value="10">Oktober</option>
+      <option value="11">November</option>
+      <option value="12">Desember</option>
+    </select>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Tanggal</th>
+          <th>Jam</th>
+          <th>Kegiatan</th>
+          <th>Tempat</th>
+          <th>Tim</th>
+          <th>Keterangan</th>
+          <th>Warna</th>
+        </tr>
+      </thead>
+      <tbody id="daftarKegiatan"></tbody>
+    </table>
+  </div>
+
+  <footer>
+    <p>© 2025 BPS Provinsi Sumatera Barat</p>
+  </footer>
+
+  <!-- 🔥 FIREBASE -->
   <script type="module">
-    // --- Import Firebase SDK ---
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // --- Konfigurasi Firebase ---
+    // ✅ Pastikan config ini sama persis dengan admin.html
     const firebaseConfig = {
       apiKey: "AIzaSyB0Flu6NacmEFNBr3_8gaqfmmzUi8gJ8Es",
       authDomain: "jadwal-pimpinan-8b0ef.firebaseapp.com",
       projectId: "jadwal-pimpinan-8b0ef",
       storageBucket: "jadwal-pimpinan-8b0ef.firebasestorage.app",
       messagingSenderId: "360212048977",
-      appId: "1:360212048977:web:1ff5749cd1416ad08f5c70"
+      appId: "1:360212048977:web:1ff5749cd1416ad08f5c70",
     };
 
-    // --- Inisialisasi Firebase ---
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const colRef = collection(db, "jadwal");
 
-    const jadwalBody = document.getElementById("jadwalBody");
-    const cariInput = document.getElementById("cariKegiatan");
+    const daftarKegiatan = document.getElementById("daftarKegiatan");
+    const judulBulan = document.getElementById("judulBulan");
     const filterBulan = document.getElementById("filterBulan");
+    const cariKegiatan = document.getElementById("cariKegiatan");
 
-    // --- Ambil data dari Firestore ---
-    async function tampilkanData() {
-      jadwalBody.innerHTML = "<tr><td colspan='6'>Memuat data...</td></tr>";
+    // 🧭 Fungsi menampilkan data
+    async function tampilkanKegiatan() {
+      const snapshot = await getDocs(colRef);
+      daftarKegiatan.innerHTML = "";
 
-      try {
-        const snapshot = await getDocs(collection(db, "jadwalPimpinan"));
-        const semuaData = [];
-        snapshot.forEach((doc) => semuaData.push(doc.data()));
+      const filterValue = filterBulan.value;
+      const cariValue = cariKegiatan.value.toLowerCase();
 
-        console.log("Data dari Firestore:", semuaData); // Debug
+      snapshot.forEach((docItem) => {
+        const data = docItem.data();
+        const tanggal = new Date(data.tanggal);
+        const bulan = String(tanggal.getMonth() + 1).padStart(2, "0");
 
-        renderTabel(semuaData);
+        // Filter dan pencarian
+        if ((filterValue === "" || bulan === filterValue) &&
+            (cariValue === "" || data.kegiatan.toLowerCase().includes(cariValue))) {
 
-        // --- Event filter pencarian ---
-        cariInput.addEventListener("input", () => {
-          const keyword = cariInput.value.toLowerCase();
-          const hasil = semuaData.filter(item =>
-            (item.kegiatan && item.kegiatan.toLowerCase().includes(keyword)) ||
-            (item.tempat && item.tempat.toLowerCase().includes(keyword)) ||
-            (item.keterangan && item.keterangan.toLowerCase().includes(keyword))
-          );
-          renderTabel(hasil);
-        });
-
-        // --- Filter berdasarkan bulan ---
-        filterBulan.addEventListener("change", () => {
-          const bulanDipilih = filterBulan.value;
-          const hasil = semuaData.filter(item => {
-            const bulan = new Date(item.hariTanggal).getMonth() + 1;
-            return bulanDipilih === "" || bulan === parseInt(bulanDipilih);
-          });
-          renderTabel(hasil);
-        });
-
-      } catch (error) {
-        console.error("Gagal memuat data:", error);
-        jadwalBody.innerHTML = "<tr><td colspan='6'>Gagal memuat data</td></tr>";
-      }
-    }
-
-    // --- Fungsi render tabel ---
-    function renderTabel(data) {
-      if (data.length === 0) {
-        jadwalBody.innerHTML = "<tr><td colspan='6'>Tidak ada data</td></tr>";
-        return;
-      }
-
-      jadwalBody.innerHTML = "";
-      data.sort((a, b) => new Date(a.hariTanggal) - new Date(b.hariTanggal));
-
-      data.forEach(item => {
-        const tr = document.createElement("tr");
-        if (item.warna) tr.classList.add(`color-${item.warna}`);
-        tr.innerHTML = `
-          <td>${new Date(item.hariTanggal).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}</td>
-          <td>${item.jam || '-'}</td>
-          <td>${item.kegiatan || '-'}</td>
-          <td>${item.tempat || '-'}</td>
-          <td>${item.tim || '-'}</td>
-          <td>${item.keterangan || '-'}</td>
-        `;
-        jadwalBody.appendChild(tr);
+          const row = document.createElement("tr");
+          row.classList.add(`color-${data.warna || "putih"}`);
+          row.innerHTML = `
+            <td>${data.tanggal}</td>
+            <td>${data.jam}</td>
+            <td>${data.kegiatan}</td>
+            <td>${data.tempat}</td>
+            <td>${data.tim}</td>
+            <td>${data.keterangan || "-"}</td>
+            <td>${data.warna}</td>
+          `;
+          daftarKegiatan.appendChild(row);
+        }
       });
+
+      // Ganti judul bulan otomatis
+      const bulanText = filterBulan.options[filterBulan.selectedIndex].text;
+      judulBulan.textContent = filterValue ? `Jadwal Bulan ${bulanText}` : "Semua Jadwal Pimpinan";
     }
 
-    // --- Tampilkan nama bulan di header dan muat data ---
-    const bulanSekarang = new Date().toLocaleString('id-ID', { month: 'long' });
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById('namaBulan').textContent =
-        bulanSekarang.charAt(0).toUpperCase() + bulanSekarang.slice(1);
-      tampilkanData();
-    });
+    // ⏱ Jalankan otomatis
+    tampilkanKegiatan();
+
+    // 🔁 Event listener filter dan pencarian
+    filterBulan.addEventListener("change", tampilkanKegiatan);
+    cariKegiatan.addEventListener("keyup", tampilkanKegiatan);
   </script>
-</head>
-
-<body>
-  <!-- HEADER -->
-  <header>
-    <div class="header-logos">
-      <img src="bps.png" alt="Logo BPS" class="logo-left">
-      <img src="SEbps.png" alt="Logo Sensus Ekonomi 2026" class="logo-right">
-    </div>
-    <div class="header-title">
-      <h1>Agenda Kegiatan Kepala BPS</h1>
-      <h2>Provinsi Sumatera Barat Tahun 2025</h2>
-    </div>
-  </header>
-
-  <!-- JUDUL BULAN -->
-  <section class="judul-bulan">
-    <h3>Bulan: <span id="namaBulan"></span></h3>
-  </section>
-
-  <!-- FILTER -->
-  <section class="filter-container">
-    <input type="text" id="cariKegiatan" placeholder="Cari kegiatan, tempat, atau keterangan..." />
-    <select id="filterBulan">
-      <option value="">Semua Bulan</option>
-      <option value="1">Januari</option>
-      <option value="2">Februari</option>
-      <option value="3">Maret</option>
-      <option value="4">April</option>
-      <option value="5">Mei</option>
-      <option value="6">Juni</option>
-      <option value="7">Juli</option>
-      <option value="8">Agustus</option>
-      <option value="9">September</option>
-      <option value="10">Oktober</option>
-      <option value="11">November</option>
-      <option value="12">Desember</option>
-    </select>
-  </section>
-
-  <!-- TABEL -->
-  <div class="table-container">
-    <table id="jadwalTable">
-      <thead>
-        <tr>
-          <th>Hari/Tanggal</th>
-          <th>Jam Acara</th>
-          <th>Nama Kegiatan</th>
-          <th>Alamat/Tempat</th>
-          <th>Tim</th>
-          <th>Keterangan</th>
-        </tr>
-      </thead>
-      <tbody id="jadwalBody"></tbody>
-    </table>
-  </div>
 </body>
 </html>
