@@ -172,11 +172,19 @@
         : "Agenda Kegiatan Pimpinan (Semua Bulan)";
     }
 
-    tampilkanKegiatan();
+    // ✅ Set otomatis bulan saat ini
+    window.addEventListener("DOMContentLoaded", () => {
+      const bulanSekarang = new Date().getMonth() + 1;
+      const bulanStr = String(bulanSekarang).padStart(2, "0");
+      filterBulan.value = bulanStr; // pilih bulan aktif
+      tampilkanKegiatan(); // tampilkan langsung
+    });
+
     filterBulan.addEventListener("change", tampilkanKegiatan);
     cariKegiatan.addEventListener("input", tampilkanKegiatan);
   </script>
 </body>
 </html>
+
 
 
