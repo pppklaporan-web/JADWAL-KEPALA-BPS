@@ -99,92 +99,97 @@
 
   <!-- 🔥 FIREBASE -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // ✅ Sesuaikan dengan konfigurasi Firebase kamu
-    const firebaseConfig = {
-      apiKey: "AIzaSyB0Flu6NacmEFNBr3_8gaqfmmzUi8gJ8Es",
-      authDomain: "jadwal-pimpinan-8b0ef.firebaseapp.com",
-      projectId: "jadwal-pimpinan-8b0ef",
-      storageBucket: "jadwal-pimpinan-8b0ef.firebasestorage.app",
-      messagingSenderId: "360212048977",
-      appId: "1:360212048977:web:1ff5749cd1416ad08f5c70",
-    };
+  // ✅ Konfigurasi Firebase
+  const firebaseConfig = {
+    apiKey: "AIzaSyB0Flu6NacmEFNBr3_8gaqfmmzUi8gJ8Es",
+    authDomain: "jadwal-pimpinan-8b0ef.firebaseapp.com",
+    projectId: "jadwal-pimpinan-8b0ef",
+    storageBucket: "jadwal-pimpinan-8b0ef.firebasestorage.app",
+    messagingSenderId: "360212048977",
+    appId: "1:360212048977:web:1ff5749cd1416ad08f5c70",
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const colRef = collection(db, "jadwal");
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const colRef = collection(db, "jadwal");
 
-    const daftarKegiatan = document.getElementById("daftarKegiatan");
-    const filterBulan = document.getElementById("filterBulan");
-    const cariKegiatan = document.getElementById("cariKegiatan");
-    const judulBulan = document.getElementById("judulBulan");
+  const daftarKegiatan = document.getElementById("daftarKegiatan");
+  const filterBulan = document.getElementById("filterBulan");
+  const cariKegiatan = document.getElementById("cariKegiatan");
+  const judulBulan = document.getElementById("judulBulan");
 
-    async function tampilkanKegiatan() {
-      daftarKegiatan.innerHTML = "<tr><td colspan='6'>Memuat data...</td></tr>";
-      const snapshot = await getDocs(colRef);
-      daftarKegiatan.innerHTML = "";
+  async function tampilkanKegiatan() {
+    daftarKegiatan.innerHTML = "<tr><td colspan='7'>Memuat data...</td></tr>";
+    const snapshot = await getDocs(colRef);
+    daftarKegiatan.innerHTML = "";
 
-      const filterValue = filterBulan.value;
-      const cariValue = cariKegiatan.value.toLowerCase();
+    const filterValue = filterBulan.value;
+    const cariValue = cariKegiatan.value.toLowerCase();
 
-      const semuaData = [];
-      snapshot.forEach(doc => semuaData.push(doc.data()));
+    const semuaData = [];
+    snapshot.forEach(doc => semuaData.push(doc.data()));
 
-      // ✅ Urutkan berdasarkan tanggal (paling awal dulu)
-      semuaData.sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
-
-      semuaData.forEach(data => {
-        const tanggal = new Date(data.tanggal);
-        const bulan = String(tanggal.getMonth() + 1).padStart(2, "0");
-
-        if (
-          (filterValue === "" || bulan === filterValue) &&
-          (cariValue === "" ||
-            data.kegiatan.toLowerCase().includes(cariValue) ||
-            data.tempat.toLowerCase().includes(cariValue) ||
-            data.tim.toLowerCase().includes(cariValue))
-        ) {
-          const tr = document.createElement("tr");
-          tr.classList.add(`color-${data.warna || "putih"}`);
-          tr.innerHTML = `
-            <td>${tanggal.toLocaleDateString("id-ID", {
-              weekday: "long",
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}</td>
-            <td>${data.jam}</td>
-            <td>${data.kegiatan}</td>
-            <td>${data.tempat}</td>
-            <td>${data.tim}</td>
-            <td>${data.keterangan || "-"}</td>
-            <td>${data.kehadiran || "-"}</td>
-          `;
-          daftarKegiatan.appendChild(tr);
-        }
-      });
-
-      const bulanText = filterBulan.options[filterBulan.selectedIndex].text;
-      judulBulan.textContent = filterValue
-        ? `Jadwal Bulan ${bulanText}`
-        : "Agenda Kegiatan Pimpinan (Semua Bulan)";
-    }
-
-    // ✅ Set otomatis bulan saat ini
-    window.addEventListener("DOMContentLoaded", () => {
-      const bulanSekarang = new Date().getMonth() + 1;
-      const bulanStr = String(bulanSekarang).padStart(2, "0");
-      filterBulan.value = bulanStr; // pilih bulan aktif
-      tampilkanKegiatan(); // tampilkan langsung
+    // ✅ Urutkan otomatis berdasarkan tanggal & jam (paling awal dulu)
+    semuaData.sort((a, b) => {
+      const waktuA = new Date(`${a.tanggal} ${a.jam || "00:00"}`);
+      const waktuB = new Date(`${b.tanggal} ${b.jam || "00:00"}`);
+      return waktuA - waktuB;
     });
 
-    filterBulan.addEventListener("change", tampilkanKegiatan);
-    cariKegiatan.addEventListener("input", tampilkanKegiatan);
-  </script>
+    semuaData.forEach(data => {
+      const tanggal = new Date(data.tanggal);
+      const bulan = String(tanggal.getMonth() + 1).padStart(2, "0");
+
+      if (
+        (filterValue === "" || bulan === filterValue) &&
+        (cariValue === "" ||
+          data.kegiatan.toLowerCase().includes(cariValue) ||
+          data.tempat.toLowerCase().includes(cariValue) ||
+          data.tim.toLowerCase().includes(cariValue))
+      ) {
+        const tr = document.createElement("tr");
+        tr.classList.add(`color-${data.warna || "putih"}`);
+        tr.innerHTML = `
+          <td>${tanggal.toLocaleDateString("id-ID", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          })}</td>
+          <td>${data.jam}</td>
+          <td>${data.kegiatan}</td>
+          <td>${data.tempat}</td>
+          <td>${data.tim}</td>
+          <td>${data.keterangan || "-"}</td>
+          <td>${data.kehadiran || "-"}</td>
+        `;
+        daftarKegiatan.appendChild(tr);
+      }
+    });
+
+    const bulanText = filterBulan.options[filterBulan.selectedIndex].text;
+    judulBulan.textContent = filterValue
+      ? `Jadwal Bulan ${bulanText}`
+      : "Agenda Kegiatan Pimpinan (Semua Bulan)";
+  }
+
+  // ✅ Set otomatis bulan saat ini
+  window.addEventListener("DOMContentLoaded", () => {
+    const bulanSekarang = new Date().getMonth() + 1;
+    const bulanStr = String(bulanSekarang).padStart(2, "0");
+    filterBulan.value = bulanStr; // pilih bulan aktif
+    tampilkanKegiatan(); // tampilkan langsung
+  });
+
+  filterBulan.addEventListener("change", tampilkanKegiatan);
+  cariKegiatan.addEventListener("input", tampilkanKegiatan);
+</script>
 </body>
 </html>
+
 
 
 
