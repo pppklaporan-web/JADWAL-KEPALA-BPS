@@ -174,33 +174,39 @@
       }
     });
 
-    // 🧾 Simpan / Update Jadwal
-    formKegiatan.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const tanggal = document.getElementById("tanggal").value;
-      const jam = document.getElementById("jam").value;
-      const kegiatan = document.getElementById("kegiatan").value;
-      const tempat = document.getElementById("tempat").value;
-      const tim = document.getElementById("tim").value;
-      const keterangan = document.getElementById("keterangan").value;
-      const kehadiran = document.getElementById("kehadiran").value;
-      const warna = document.getElementById("warna").value;
+   <!-- 🧾 Simpan / Update Jadwal -->
+  formKegiatan.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const tanggal = document.getElementById("tanggal").value;
+    const jam = document.getElementById("jam").value;
+    const kegiatan = document.getElementById("kegiatan").value;
+    const tempat = document.getElementById("tempat").value;
+    const tim = document.getElementById("tim").value;
+    const keterangan = document.getElementById("keterangan").value;
+    let kehadiran = document.getElementById("kehadiran").value;
+    const warna = document.getElementById("warna").value;
 
-      if (editId) {
-        await updateDoc(doc(db, "jadwal", editId), {
-          tanggal, jam, kegiatan, tempat, tim, keterangan, kehadiran, warna
-        });
-        alert("✅ Jadwal berhasil diperbarui!");
-        editId = null;
-        simpanBtn.textContent = "Simpan Jadwal";
-      } else {
-        await addDoc(colRef, { tanggal, jam, kegiatan, tempat, tim, keterangan, kehadiran, warna });
-        alert("✅ Jadwal berhasil disimpan!");
-      }
+    // ✅ Jika kehadiran kosong, isi otomatis
+    if (!kehadiran || kehadiran.trim() === "") {
+      kehadiran = "Tunggu Konfirmasi";
+    }
 
-      formKegiatan.reset();
-      tampilkanKegiatan();
-    });
+    if (editId) {
+      await updateDoc(doc(db, "jadwal", editId), {
+        tanggal, jam, kegiatan, tempat, tim, keterangan, kehadiran, warna
+      });
+      alert("✅ Jadwal berhasil diperbarui!");
+      editId = null;
+      simpanBtn.textContent = "Simpan Jadwal";
+    } else {
+      await addDoc(colRef, { tanggal, jam, kegiatan, tempat, tim, keterangan, kehadiran, warna });
+      alert("✅ Jadwal berhasil disimpan!");
+    }
+
+    formKegiatan.reset();
+    tampilkanKegiatan();
+  });
+
 
     // 📋 Tampilkan Jadwal (Urut + Pencarian)
     async function tampilkanKegiatan() {
@@ -291,3 +297,4 @@
   </script>
 </body>
 </html>
+
