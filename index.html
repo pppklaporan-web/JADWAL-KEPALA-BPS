@@ -77,6 +77,15 @@
 
     <section class="table-section">
       <h2>Daftar Jadwal yang Sudah Diinput</h2>
+
+      <!-- 🔍 Kolom Pencarian -->
+      <input 
+        type="text" 
+        id="searchInput" 
+        placeholder="🔍 Cari jadwal (nama, tempat, tim, tanggal...)" 
+        style="width:100%;padding:8px;margin:10px 0;border:1px solid #ccc;border-radius:5px;"
+      >
+
       <table id="tabelKegiatan">
         <thead>
           <tr>
@@ -102,9 +111,15 @@
 
   <!-- 🔥 FIREBASE SETUP -->
   <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { 
+    initializeApp 
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { 
+    getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged 
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import { 
+    getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, query, orderBy 
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   // 🔧 Firebase Config
   const firebaseConfig = {
@@ -127,8 +142,9 @@
   const logoutBtn = document.getElementById("logoutBtn");
   const formKegiatan = document.getElementById("formKegiatan");
   const simpanBtn = formKegiatan.querySelector("button[type='submit']");
+  const searchInput = document.getElementById("searchInput");
 
-  let editId = null; // 🆔 Menyimpan ID data yang sedang diedit
+  let editId = null;
 
   // 🔐 Login
   loginForm.addEventListener("submit", async (e) => {
@@ -176,18 +192,18 @@
     const warna = document.getElementById("warna").value;
 
     if (editId) {
-      // ✏️ Update data yang sudah ada
-    await addDoc(colRef, { 
-      tanggal, jam, kegiatan, tempat, tim, keterangan, kehadiran, warna, 
-      timestamp: new Date() // waktu saat input disimpan
-    });
-
+      await updateDoc(doc(db, "jadwal", editId), {
+        tanggal, jam, kegiatan, tempat, tim, keterangan, kehadiran, warna,
+        timestamp: new Date()
+      });
       alert("✅ Jadwal berhasil diperbarui!");
       editId = null;
       simpanBtn.textContent = "Simpan Jadwal";
     } else {
-      // ➕ Tambah data baru
-      await addDoc(colRef, { tanggal, jam, kegiatan, tempat, tim, keterangan, kehadiran, warna });
+      await addDoc(colRef, { 
+        tanggal, jam, kegiatan, tempat, tim, keterangan, kehadiran, warna,
+        timestamp: new Date()
+      });
       alert("✅ Jadwal berhasil disimpan!");
     }
 
@@ -195,89 +211,69 @@
     tampilkanKegiatan();
   });
 
-  // 📋 Tampilkan Jadwal
+  // 📋 Tampilkan Jadwal + Pencarian
   async function tampilkanKegiatan() {
     const daftarKegiatan = document.getElementById("daftarKegiatan");
     daftarKegiatan.innerHTML = "";
 
-    // 🔽 Urut berdasarkan timestamp terbaru
     const q = query(colRef, orderBy("timestamp", "desc"));
     const snapshot = await getDocs(q);
+    let semuaData = [];
 
     snapshot.forEach((docItem) => {
-      const data = docItem.data();
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${data.tanggal}</td>
-        <td>${data.jam}</td>
-        <td>${data.kegiatan}</td>
-        <td>${data.tempat}</td>
-        <td>${data.tim}</td>
-        <td>${data.keterangan}</td>
-        <td>${data.kehadiran || "-"}</td>
-        <td><span class="warna-box ${data.warna}">${data.warna}</span></td>
-        <td>
-          <button class="editBtn" data-id="${docItem.id}">Edit</button>
-          <button class="deleteBtn" data-id="${docItem.id}">Hapus</button>
-        </td>
-      `;
-      daftarKegiatan.appendChild(row);
-  });
-
-  // 🗑️ & ✏️ Event tombol tetap sama
-  document.querySelectorAll(".deleteBtn").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      if (confirm("Yakin hapus jadwal ini?")) {
-        await deleteDoc(doc(db, "jadwal", btn.dataset.id));
-        tampilkanKegiatan();
-      }
+      semuaData.push({ id: docItem.id, ...docItem.data() });
     });
-  });
 
-  document.querySelectorAll(".editBtn").forEach((btn) => {
-    btn.addEventListener("click", async () => {
-      const id = btn.dataset.id;
-      const allDocs = await getDocs(colRef);
-      allDocs.forEach((item) => {
-        if (item.id === id) {
-          const data = item.data();
-          document.getElementById("tanggal").value = data.tanggal;
-          document.getElementById("jam").value = data.jam;
-          document.getElementById("kegiatan").value = data.kegiatan;
-          document.getElementById("tempat").value = data.tempat;
-          document.getElementById("tim").value = data.tim;
-          document.getElementById("keterangan").value = data.keterangan;
-          document.getElementById("kehadiran").value = data.kehadiran || "";
-          document.getElementById("warna").value = data.warna || "biru";
-        }
+    renderTable(semuaData);
+
+    // 🔍 Fitur pencarian real-time
+    searchInput.addEventListener("input", () => {
+      const keyword = searchInput.value.toLowerCase();
+      const hasil = semuaData.filter((item) =>
+        item.kegiatan.toLowerCase().includes(keyword) ||
+        item.tempat.toLowerCase().includes(keyword) ||
+        item.tim.toLowerCase().includes(keyword) ||
+        item.tanggal.toLowerCase().includes(keyword)
+      );
+      renderTable(hasil);
+    });
+
+    function renderTable(dataList) {
+      daftarKegiatan.innerHTML = "";
+      dataList.forEach((data) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${data.tanggal}</td>
+          <td>${data.jam}</td>
+          <td>${data.kegiatan}</td>
+          <td>${data.tempat}</td>
+          <td>${data.tim}</td>
+          <td>${data.keterangan}</td>
+          <td>${data.kehadiran || "-"}</td>
+          <td><span class="warna-box ${data.warna}">${data.warna}</span></td>
+          <td>
+            <button class="editBtn" data-id="${data.id}">Edit</button>
+            <button class="deleteBtn" data-id="${data.id}">Hapus</button>
+          </td>
+        `;
+        daftarKegiatan.appendChild(row);
       });
-      editId = id;
-      simpanBtn.textContent = "Update Jadwal";
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    });
-  });
-}
 
-
-    // 🗑️ Tombol hapus
-    document.querySelectorAll(".deleteBtn").forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        if (confirm("Yakin hapus jadwal ini?")) {
-          await deleteDoc(doc(db, "jadwal", btn.dataset.id));
-          tampilkanKegiatan();
-        }
+      // 🗑️ Hapus
+      document.querySelectorAll(".deleteBtn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          if (confirm("Yakin hapus jadwal ini?")) {
+            await deleteDoc(doc(db, "jadwal", btn.dataset.id));
+            tampilkanKegiatan();
+          }
+        });
       });
-    });
 
-    // ✏️ Tombol edit — isi kembali ke form
-    document.querySelectorAll(".editBtn").forEach((btn) => {
-      btn.addEventListener("click", async () => {
-        const id = btn.dataset.id;
-        const docRef = doc(db, "jadwal", id);
-        const allDocs = await getDocs(colRef);
-        allDocs.forEach((item) => {
-          if (item.id === id) {
-            const data = item.data();
+      // ✏️ Edit
+      document.querySelectorAll(".editBtn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const data = semuaData.find((x) => x.id === btn.dataset.id);
+          if (data) {
             document.getElementById("tanggal").value = data.tanggal;
             document.getElementById("jam").value = data.jam;
             document.getElementById("kegiatan").value = data.kegiatan;
@@ -286,16 +282,14 @@
             document.getElementById("keterangan").value = data.keterangan;
             document.getElementById("kehadiran").value = data.kehadiran || "";
             document.getElementById("warna").value = data.warna || "biru";
+            editId = data.id;
+            simpanBtn.textContent = "Update Jadwal";
+            window.scrollTo({ top: 0, behavior: "smooth" });
           }
         });
-        editId = id;
-        simpanBtn.textContent = "Update Jadwal";
-        window.scrollTo({ top: 0, behavior: "smooth" });
       });
-    });
+    }
   }
-</script>
+  </script>
 </body>
 </html>
-
-
