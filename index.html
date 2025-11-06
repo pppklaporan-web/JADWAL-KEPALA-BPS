@@ -104,7 +104,7 @@
   <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   // 🔧 Firebase Config
   const firebaseConfig = {
@@ -177,9 +177,11 @@
 
     if (editId) {
       // ✏️ Update data yang sudah ada
-      await updateDoc(doc(db, "jadwal", editId), {
-        tanggal, jam, kegiatan, tempat, tim, keterangan, kehadiran, warna
-      });
+    await addDoc(colRef, { 
+      tanggal, jam, kegiatan, tempat, tim, keterangan, kehadiran, warna, 
+      timestamp: new Date() // waktu saat input disimpan
+    });
+
       alert("✅ Jadwal berhasil diperbarui!");
       editId = null;
       simpanBtn.textContent = "Simpan Jadwal";
@@ -197,7 +199,10 @@
   async function tampilkanKegiatan() {
     const daftarKegiatan = document.getElementById("daftarKegiatan");
     daftarKegiatan.innerHTML = "";
-    const snapshot = await getDocs(colRef);
+
+    // 🔽 Urut berdasarkan timestamp terbaru
+    const q = query(colRef, orderBy("timestamp", "desc"));
+    const snapshot = await getDocs(q);
 
     snapshot.forEach((docItem) => {
       const data = docItem.data();
@@ -217,7 +222,42 @@
         </td>
       `;
       daftarKegiatan.appendChild(row);
+  });
+
+  // 🗑️ & ✏️ Event tombol tetap sama
+  document.querySelectorAll(".deleteBtn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      if (confirm("Yakin hapus jadwal ini?")) {
+        await deleteDoc(doc(db, "jadwal", btn.dataset.id));
+        tampilkanKegiatan();
+      }
     });
+  });
+
+  document.querySelectorAll(".editBtn").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const id = btn.dataset.id;
+      const allDocs = await getDocs(colRef);
+      allDocs.forEach((item) => {
+        if (item.id === id) {
+          const data = item.data();
+          document.getElementById("tanggal").value = data.tanggal;
+          document.getElementById("jam").value = data.jam;
+          document.getElementById("kegiatan").value = data.kegiatan;
+          document.getElementById("tempat").value = data.tempat;
+          document.getElementById("tim").value = data.tim;
+          document.getElementById("keterangan").value = data.keterangan;
+          document.getElementById("kehadiran").value = data.kehadiran || "";
+          document.getElementById("warna").value = data.warna || "biru";
+        }
+      });
+      editId = id;
+      simpanBtn.textContent = "Update Jadwal";
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  });
+}
+
 
     // 🗑️ Tombol hapus
     document.querySelectorAll(".deleteBtn").forEach((btn) => {
@@ -257,3 +297,4 @@
 </script>
 </body>
 </html>
+
