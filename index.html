@@ -179,11 +179,11 @@
       e.preventDefault();
       const tanggal = document.getElementById("tanggal").value;
       const jam = document.getElementById("jam").value;
-      const kegiatan = document.getElementById("kegiatan").value;
-      const tempat = document.getElementById("tempat").value;
-      const tim = document.getElementById("tim").value;
-      const keterangan = document.getElementById("keterangan").value;
-      const kehadiran = document.getElementById("kehadiran").value;
+      const kegiatan = document.getElementById("kegiatan").value.trim() || "-";
+      const tempat = document.getElementById("tempat").value.trim() || "-";
+      const tim = document.getElementById("tim").value.trim() || "-";
+      const keterangan = document.getElementById("keterangan").value.trim() || "-";
+      const kehadiran = document.getElementById("kehadiran").value.trim() || "-";
       const warna = document.getElementById("warna").value;
 
       if (editId) {
@@ -291,3 +291,4 @@
   </script>
 </body>
 </html>
+
