@@ -263,3 +263,28 @@ button.hapus:hover {
   }
 }
 
+/* === TOMBOL FILTER BULAN OPSIONAL === */
+#toggleBulanBtn {
+  display: inline-block;
+  background: linear-gradient(90deg, #007bff, #009e60);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.1s ease;
+  margin-bottom: 10px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+}
+
+#toggleBulanBtn:hover {
+  background: linear-gradient(90deg, #009e60, #ff7b00);
+  transform: scale(1.03);
+}
+
+#toggleBulanBtn:active {
+  transform: scale(0.97);
+}
+
+
