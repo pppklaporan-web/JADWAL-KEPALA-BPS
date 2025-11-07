@@ -7,6 +7,7 @@
   <link rel="icon" type="image/png" href="bps.png" />
   <link rel="stylesheet" href="style.css" />
   <style>
+    /* Kolom pencarian */
     #searchInput {
       width: 100%;
       padding: 8px;
@@ -43,7 +44,6 @@
       <button id="logoutBtn" class="logout">Logout</button>
     </div>
 
-    <!-- 📝 FORM INPUT -->
     <section class="form-section">
       <h2>Form Input Jadwal</h2>
       <form id="formKegiatan">
@@ -86,20 +86,11 @@
       </form>
     </section>
 
-    <!-- 📋 DAFTAR JADWAL -->
     <section class="table-section">
       <h2>Daftar Jadwal yang Sudah Diinput</h2>
-      <p id="infoBulan" style="font-weight: bold; color: #007bff; margin-top: -5px;"></p>
-
-      <button id="toggleBulanBtn" 
-        style="margin-bottom:10px; padding:5px 10px; border-radius:6px; border:1px solid #ccc; background:#f0f0f0; cursor:pointer;">
-        🔁 Tampilkan Semua Bulan
-      </button>
-
-      <input type="text" id="searchInput" placeholder="Cari jadwal..." />
-
-      <table border="1" cellspacing="0" cellpadding="6" width="100%">
-        <thead style="background:#f8f8f8;">
+      <input type="text" id="searchInput" placeholder="🔍 Cari jadwal (nama, tempat, tim, tanggal...)" />
+      <table id="tabelKegiatan">
+        <thead>
           <tr>
             <th>Hari/Tanggal</th>
             <th>Jam</th>
@@ -149,9 +140,8 @@
     const formKegiatan = document.getElementById("formKegiatan");
     const simpanBtn = formKegiatan.querySelector("button[type='submit']");
     const searchInput = document.getElementById("searchInput");
-    let semuaData = [];
+    let semuaData = []; // Untuk pencarian
     let editId = null;
-    let tampilSemua = false;
 
     // 🔐 Login
     loginForm.addEventListener("submit", async (e) => {
@@ -174,7 +164,7 @@
       editId = null;
     });
 
-    // 👀 Pantau login
+    // 👀 Pantau status login
     onAuthStateChanged(auth, (user) => {
       if (user) {
         loginSection.style.display = "none";
@@ -186,78 +176,60 @@
       }
     });
 
-    // 🧾 Simpan / Update
+    // 🧾 Simpan / Update Jadwal
     formKegiatan.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const data = {
-        tanggal: document.getElementById("tanggal").value,
-        jam: document.getElementById("jam").value,
-        kegiatan: document.getElementById("kegiatan").value,
-        tempat: document.getElementById("tempat").value,
-        tim: document.getElementById("tim").value,
-        keterangan: document.getElementById("keterangan").value,
-        kehadiran: document.getElementById("kehadiran").value,
-        warna: document.getElementById("warna").value,
-      };
+      const tanggal = document.getElementById("tanggal").value;
+      const jam = document.getElementById("jam").value;
+      const kegiatan = document.getElementById("kegiatan").value;
+      const tempat = document.getElementById("tempat").value;
+      const tim = document.getElementById("tim").value;
+      const keterangan = document.getElementById("keterangan").value;
+      const kehadiran = document.getElementById("kehadiran").value;
+      const warna = document.getElementById("warna").value;
 
       if (editId) {
-        await updateDoc(doc(db, "jadwal", editId), data);
+        await updateDoc(doc(db, "jadwal", editId), {
+          tanggal, jam, kegiatan, tempat, tim, keterangan, kehadiran, warna
+        });
         alert("✅ Jadwal berhasil diperbarui!");
         editId = null;
         simpanBtn.textContent = "Simpan Jadwal";
       } else {
-        await addDoc(colRef, data);
+        await addDoc(colRef, { tanggal, jam, kegiatan, tempat, tim, keterangan, kehadiran, warna });
         alert("✅ Jadwal berhasil disimpan!");
       }
+
       formKegiatan.reset();
-      tampilkanKegiatan(tampilSemua);
+      tampilkanKegiatan();
     });
 
-    // 📋 Tampilkan Jadwal (bulan ini / semua)
-    async function tampilkanKegiatan(tampilkanSemua = false) {
+    // 📋 Tampilkan Jadwal (Urut + Pencarian)
+    async function tampilkanKegiatan() {
       const daftarKegiatan = document.getElementById("daftarKegiatan");
       daftarKegiatan.innerHTML = "";
       const snapshot = await getDocs(colRef);
-      semuaData = snapshot.docs.map(docItem => ({ id: docItem.id, ...docItem.data() }));
 
-      const sekarang = new Date();
-      const bulanIni = sekarang.getMonth() + 1;
-      const tahunIni = sekarang.getFullYear();
-      const namaBulan = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+      semuaData = [];
+      snapshot.forEach((docItem) => {
+        semuaData.push({ id: docItem.id, ...docItem.data() });
+      });
 
-      let dataTampil = semuaData;
-      if (!tampilkanSemua) {
-        dataTampil = semuaData.filter(item => {
-          const tgl = new Date(item.tanggal);
-          return tgl.getMonth() + 1 === bulanIni && tgl.getFullYear() === tahunIni;
-        });
-      }
+      // Urutkan berdasarkan tanggal + jam (terbaru di atas)
+      semuaData.sort((a, b) => {
+        const dateA = new Date(a.tanggal + "T" + (a.jam || "00:00"));
+        const dateB = new Date(b.tanggal + "T" + (b.jam || "00:00"));
+        return dateB - dateA;
+      });
 
-      document.getElementById("infoBulan").textContent =
-        tampilkanSemua
-          ? "📅 Menampilkan Semua Jadwal"
-          : `🗓️ Menampilkan Jadwal Bulan: ${namaBulan[bulanIni - 1]} ${tahunIni}`;
-
-      document.getElementById("toggleBulanBtn").textContent =
-        tampilkanSemua ? "⬅️ Tampilkan Bulan Ini" : "🔁 Tampilkan Semua Bulan";
-
-      dataTampil.sort((a, b) => new Date(b.tanggal + "T" + (b.jam || "00:00")) - new Date(a.tanggal + "T" + (a.jam || "00:00")));
-
-      renderTabel(dataTampil);
+      renderTabel(semuaData);
     }
 
-    // 🔁 Tombol Ganti Mode Bulan
-    const toggleBtn = document.getElementById("toggleBulanBtn");
-    toggleBtn.addEventListener("click", () => {
-      tampilSemua = !tampilSemua;
-      tampilkanKegiatan(tampilSemua);
-    });
-
-    // 🔍 Render Tabel
+    // 🔍 Fungsi Render Tabel
     function renderTabel(dataArray) {
       const daftarKegiatan = document.getElementById("daftarKegiatan");
       daftarKegiatan.innerHTML = "";
-      dataArray.forEach(data => {
+      dataArray.forEach((data) => {
         const row = document.createElement("tr");
         row.innerHTML = `
           <td>${data.tanggal}</td>
@@ -276,16 +248,18 @@
         daftarKegiatan.appendChild(row);
       });
 
-      document.querySelectorAll(".deleteBtn").forEach(btn => {
+      // Tombol hapus
+      document.querySelectorAll(".deleteBtn").forEach((btn) => {
         btn.addEventListener("click", async () => {
           if (confirm("Yakin hapus jadwal ini?")) {
             await deleteDoc(doc(db, "jadwal", btn.dataset.id));
-            tampilkanKegiatan(tampilSemua);
+            tampilkanKegiatan();
           }
         });
       });
 
-      document.querySelectorAll(".editBtn").forEach(btn => {
+      // Tombol edit
+      document.querySelectorAll(".editBtn").forEach((btn) => {
         btn.addEventListener("click", () => {
           const item = semuaData.find(d => d.id === btn.dataset.id);
           if (item) {
@@ -305,7 +279,7 @@
       });
     }
 
-    // 🔎 Pencarian Real-Time
+    // 🔎 Kolom Pencarian Real-Time
     searchInput.addEventListener("input", (e) => {
       const keyword = e.target.value.toLowerCase();
       const hasil = semuaData.filter(item =>
@@ -319,3 +293,7 @@
   </script>
 </body>
 </html>
+
+
+
+
