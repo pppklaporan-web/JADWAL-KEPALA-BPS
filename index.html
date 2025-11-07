@@ -6,17 +6,6 @@
   <title>Admin Jadwal Pimpinan</title>
   <link rel="icon" type="image/png" href="bps.png" />
   <link rel="stylesheet" href="style.css" />
-  <style>
-    /* Kolom pencarian */
-    #searchInput {
-      width: 100%;
-      padding: 8px;
-      margin-top: 10px;
-      margin-bottom: 10px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-  </style>
 </head>
 <body>
   <header>
@@ -49,22 +38,16 @@
       <form id="formKegiatan">
         <label>Hari/Tanggal:</label>
         <input type="date" id="tanggal" required />
-
         <label>Jam Acara:</label>
         <input type="time" id="jam" required />
-
         <label>Nama Kegiatan:</label>
         <input type="text" id="kegiatan" required placeholder="Masukkan nama kegiatan" />
-
         <label>Alamat/Tempat:</label>
         <input type="text" id="tempat" required placeholder="Masukkan tempat kegiatan" />
-
         <label>Tim:</label>
         <input type="text" id="tim" required placeholder="Nama Tim atau Personil" />
-
         <label>Keterangan:</label>
         <textarea id="keterangan" placeholder="Tambahkan keterangan..."></textarea>
-
         <label>Konfirmasi Kehadiran:</label>
         <select id="kehadiran" required>
           <option value="">-- Pilih Konfirmasi --</option>          
@@ -73,7 +56,6 @@
           <option value="Dihadiri Kepala">Dihadiri Kepala</option>
           <option value="Diwakilkan">Diwakilkan</option>          
         </select>
-
         <label>Pilih Warna Penanda:</label>
         <select id="warna">
           <option value="biru">Biru</option>
@@ -81,14 +63,17 @@
           <option value="kuning">Kuning</option>
           <option value="hijau">Hijau</option>          
         </select>
-
         <button type="submit">Simpan Jadwal</button>
       </form>
     </section>
 
     <section class="table-section">
       <h2>Daftar Jadwal yang Sudah Diinput</h2>
+      <p id="infoBulan" style="font-weight: bold; color: #007bff; margin-top: -5px;"></p>
+      <button id="toggleBulanBtn">🔁 Tampilkan Semua Bulan</button>
+
       <input type="text" id="searchInput" placeholder="🔍 Cari jadwal (nama, tempat, tim, tanggal...)" />
+
       <table id="tabelKegiatan">
         <thead>
           <tr>
@@ -112,13 +97,12 @@
     <p>© 2025 BPS Provinsi Sumatera Barat</p>
   </footer>
 
-  <!-- 🔥 FIREBASE SETUP -->
+  <!-- 🔥 FIREBASE SCRIPT -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // 🔧 Firebase Config
     const firebaseConfig = {
       apiKey: "AIzaSyB0Flu6NacmEFNBr3_8gaqfmmzUi8gJ8Es",
       authDomain: "jadwal-pimpinan-8b0ef.firebaseapp.com",
@@ -140,23 +124,22 @@
     const formKegiatan = document.getElementById("formKegiatan");
     const simpanBtn = formKegiatan.querySelector("button[type='submit']");
     const searchInput = document.getElementById("searchInput");
-    let semuaData = []; // Untuk pencarian
+    const toggleBulanBtn = document.getElementById("toggleBulanBtn");
+    const infoBulan = document.getElementById("infoBulan");
+    let semuaData = [];
     let editId = null;
+    let tampilSemua = false;
 
-    // 🔐 Login
     loginForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
       try {
-        await signInWithEmailAndPassword(auth, email, password);
+        await signInWithEmailAndPassword(auth, email.value, password.value);
         alert("✅ Login berhasil!");
-      } catch (error) {
+      } catch {
         alert("❌ Login gagal! Periksa email & password.");
       }
     });
 
-    // 🚪 Logout
     logoutBtn.addEventListener("click", async () => {
       await signOut(auth);
       formKegiatan.reset();
@@ -164,7 +147,6 @@
       editId = null;
     });
 
-    // 👀 Pantau status login
     onAuthStateChanged(auth, (user) => {
       if (user) {
         loginSection.style.display = "none";
@@ -176,124 +158,111 @@
       }
     });
 
-    // 🧾 Simpan / Update Jadwal
     formKegiatan.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const tanggal = document.getElementById("tanggal").value;
-      const jam = document.getElementById("jam").value;
-      const kegiatan = document.getElementById("kegiatan").value;
-      const tempat = document.getElementById("tempat").value;
-      const tim = document.getElementById("tim").value;
-      const keterangan = document.getElementById("keterangan").value;
-      const kehadiran = document.getElementById("kehadiran").value;
-      const warna = document.getElementById("warna").value;
-
+      const data = {
+        tanggal: tanggal.value,
+        jam: jam.value,
+        kegiatan: kegiatan.value,
+        tempat: tempat.value,
+        tim: tim.value,
+        keterangan: keterangan.value,
+        kehadiran: kehadiran.value,
+        warna: warna.value
+      };
       if (editId) {
-        await updateDoc(doc(db, "jadwal", editId), {
-          tanggal, jam, kegiatan, tempat, tim, keterangan, kehadiran, warna
-        });
-        alert("✅ Jadwal berhasil diperbarui!");
+        await updateDoc(doc(db, "jadwal", editId), data);
+        alert("✅ Jadwal diperbarui!");
         editId = null;
         simpanBtn.textContent = "Simpan Jadwal";
       } else {
-        await addDoc(colRef, { tanggal, jam, kegiatan, tempat, tim, keterangan, kehadiran, warna });
-        alert("✅ Jadwal berhasil disimpan!");
+        await addDoc(colRef, data);
+        alert("✅ Jadwal disimpan!");
       }
-
       formKegiatan.reset();
       tampilkanKegiatan();
     });
 
-    // 📋 Tampilkan Jadwal (Urut + Pencarian)
     async function tampilkanKegiatan() {
       const daftarKegiatan = document.getElementById("daftarKegiatan");
       daftarKegiatan.innerHTML = "";
       const snapshot = await getDocs(colRef);
 
-      semuaData = [];
-      snapshot.forEach((docItem) => {
-        semuaData.push({ id: docItem.id, ...docItem.data() });
-      });
+      semuaData = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+      const now = new Date();
+      const bulan = now.getMonth() + 1;
+      const tahun = now.getFullYear();
+      const namaBulan = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+      const dataTampil = tampilSemua
+        ? semuaData
+        : semuaData.filter((i) => {
+            const tgl = new Date(i.tanggal);
+            return tgl.getMonth() + 1 === bulan && tgl.getFullYear() === tahun;
+          });
 
-      // Urutkan berdasarkan tanggal + jam (terbaru di atas)
-      semuaData.sort((a, b) => {
-        const dateA = new Date(a.tanggal + "T" + (a.jam || "00:00"));
-        const dateB = new Date(b.tanggal + "T" + (b.jam || "00:00"));
-        return dateB - dateA;
-      });
+      infoBulan.textContent = tampilSemua
+        ? "📅 Menampilkan Semua Jadwal"
+        : `🗓️ Jadwal Bulan ${namaBulan[bulan - 1]} ${tahun}`;
+      toggleBulanBtn.textContent = tampilSemua ? "⬅️ Tampilkan Bulan Ini" : "🔁 Tampilkan Semua Bulan";
 
-      renderTabel(semuaData);
+      dataTampil.sort((a, b) => new Date(b.tanggal + "T" + b.jam) - new Date(a.tanggal + "T" + a.jam));
+      renderTabel(dataTampil);
     }
 
-    // 🔍 Fungsi Render Tabel
+    toggleBulanBtn.addEventListener("click", () => {
+      tampilSemua = !tampilSemua;
+      tampilkanKegiatan();
+    });
+
     function renderTabel(dataArray) {
       const daftarKegiatan = document.getElementById("daftarKegiatan");
-      daftarKegiatan.innerHTML = "";
-      dataArray.forEach((data) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${data.tanggal}</td>
-          <td>${data.jam}</td>
-          <td>${data.kegiatan}</td>
-          <td>${data.tempat}</td>
-          <td>${data.tim}</td>
-          <td>${data.keterangan}</td>
-          <td>${data.kehadiran || "-"}</td>
-          <td><span class="warna-box ${data.warna}">${data.warna}</span></td>
-          <td>
-            <button class="editBtn" data-id="${data.id}">Edit</button>
-            <button class="deleteBtn" data-id="${data.id}">Hapus</button>
-          </td>
-        `;
-        daftarKegiatan.appendChild(row);
-      });
+      daftarKegiatan.innerHTML = dataArray.length
+        ? dataArray.map((d) => `
+          <tr>
+            <td>${d.tanggal}</td>
+            <td>${d.jam}</td>
+            <td>${d.kegiatan}</td>
+            <td>${d.tempat}</td>
+            <td>${d.tim}</td>
+            <td>${d.keterangan || "-"}</td>
+            <td>${d.kehadiran || "-"}</td>
+            <td><span class="warna-box ${d.warna}">${d.warna}</span></td>
+            <td>
+              <button class="editBtn" data-id="${d.id}">Edit</button>
+              <button class="deleteBtn" data-id="${d.id}">Hapus</button>
+            </td>
+          </tr>`).join("")
+        : `<tr><td colspan="9">Tidak ada data ditemukan</td></tr>`;
 
-      // Tombol hapus
       document.querySelectorAll(".deleteBtn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
+        btn.onclick = async () => {
           if (confirm("Yakin hapus jadwal ini?")) {
             await deleteDoc(doc(db, "jadwal", btn.dataset.id));
             tampilkanKegiatan();
           }
-        });
+        };
       });
 
-      // Tombol edit
       document.querySelectorAll(".editBtn").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const item = semuaData.find(d => d.id === btn.dataset.id);
-          if (item) {
-            document.getElementById("tanggal").value = item.tanggal;
-            document.getElementById("jam").value = item.jam;
-            document.getElementById("kegiatan").value = item.kegiatan;
-            document.getElementById("tempat").value = item.tempat;
-            document.getElementById("tim").value = item.tim;
-            document.getElementById("keterangan").value = item.keterangan;
-            document.getElementById("kehadiran").value = item.kehadiran || "";
-            document.getElementById("warna").value = item.warna || "biru";
-            editId = item.id;
-            simpanBtn.textContent = "Update Jadwal";
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          }
-        });
+        btn.onclick = () => {
+          const d = semuaData.find((x) => x.id === btn.dataset.id);
+          Object.entries(d).forEach(([k, v]) => {
+            if (document.getElementById(k)) document.getElementById(k).value = v;
+          });
+          editId = d.id;
+          simpanBtn.textContent = "Update Jadwal";
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        };
       });
     }
 
-    // 🔎 Kolom Pencarian Real-Time
     searchInput.addEventListener("input", (e) => {
-      const keyword = e.target.value.toLowerCase();
-      const hasil = semuaData.filter(item =>
-        (item.kegiatan?.toLowerCase().includes(keyword)) ||
-        (item.tempat?.toLowerCase().includes(keyword)) ||
-        (item.tim?.toLowerCase().includes(keyword)) ||
-        (item.tanggal?.toLowerCase().includes(keyword))
+      const k = e.target.value.toLowerCase();
+      const hasil = semuaData.filter((i) =>
+        [i.kegiatan, i.tempat, i.tim, i.tanggal].some((f) => f?.toLowerCase().includes(k))
       );
       renderTabel(hasil);
     });
   </script>
 </body>
 </html>
-
-
-
-
